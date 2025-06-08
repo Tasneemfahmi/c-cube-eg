@@ -15,7 +15,7 @@ import React, { useState } from 'react';
         { name: 'Home', path: '/' },
         { name: 'Shop', path: '/shop' },
         { name: 'About', path: '/about' },
-        { name: 'Contact', path: '/contact' },
+        { name: 'Custom Orders', path: '/custom-orders' },
       ];
 
       const linkVariants = {

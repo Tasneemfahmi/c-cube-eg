@@ -68,62 +68,8 @@ import React, { useState } from 'react';
           className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 animate-fade-in"
         >
           <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl font-bold text-pastel-accent text-center mb-12">
-            Get In Touch
+            Custom Order
           </motion.h1>
-
-          <div className="grid md:grid-cols-2 gap-12 md:gap-16 mb-16">
-            {/* Contact Information */}
-            <motion.div variants={itemVariants} className="space-y-8">
-              <h2 className="text-2xl md:text-3xl font-semibold text-pastel-accent">We'd love to hear from you!</h2>
-              <p className="text-pastel-accent/80 text-lg">
-                Whether you have a question about our products, an idea for a custom piece, or just want to say hello, 
-                feel free to reach out. We're always happy to connect with fellow craft lovers!
-              </p>
-              <div className="space-y-6">
-                {contactInfo.map((info, index) => (
-                  <motion.a 
-                    key={index}
-                    href={info.href}
-                    className="flex items-center space-x-4 group"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
-                  >
-                    <span className="flex-shrink-0 p-3 bg-pastel-light rounded-full group-hover:bg-pastel-medium transition-colors duration-300">
-                      {info.icon}
-                    </span>
-                    <span className="text-pastel-accent group-hover:text-pastel-dark transition-colors duration-300">{info.text}</span>
-                  </motion.a>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Contact Form */}
-            <motion.div variants={itemVariants} className="bg-pastel-light p-8 rounded-xl shadow-xl">
-              <h2 className="text-2xl font-semibold text-pastel-accent mb-6">Send Us a Message</h2>
-              <form onSubmit={(e) => handleSubmit(e, 'contact')} className="space-y-6">
-                <div>
-                  <Label htmlFor="name" className="text-pastel-accent/90">Full Name</Label>
-                  <Input type="text" name="name" id="name" value={formData.name} onChange={(e) => handleInputChange(e, 'contact')} required className="bg-white border-pastel-medium focus:border-pastel-dark focus:ring-pastel-dark" />
-                </div>
-                <div>
-                  <Label htmlFor="email" className="text-pastel-accent/90">Email Address</Label>
-                  <Input type="email" name="email" id="email" value={formData.email} onChange={(e) => handleInputChange(e, 'contact')} required className="bg-white border-pastel-medium focus:border-pastel-dark focus:ring-pastel-dark" />
-                </div>
-                <div>
-                  <Label htmlFor="subject" className="text-pastel-accent/90">Subject</Label>
-                  <Input type="text" name="subject" id="subject" value={formData.subject} onChange={(e) => handleInputChange(e, 'contact')} required className="bg-white border-pastel-medium focus:border-pastel-dark focus:ring-pastel-dark" />
-                </div>
-                <div>
-                  <Label htmlFor="message" className="text-pastel-accent/90">Your Message</Label>
-                  <Textarea name="message" id="message" rows={5} value={formData.message} onChange={(e) => handleInputChange(e, 'contact')} required className="bg-white border-pastel-medium focus:border-pastel-dark focus:ring-pastel-dark" />
-                </div>
-                <Button type="submit" className="w-full bg-pastel-accent text-pastel-bg hover:bg-pastel-accent/90 shadow-md">
-                  Send Message <Send size={18} className="ml-2" />
-                </Button>
-              </form>
-            </motion.div>
-          </div>
 
           {/* Custom Orders Form Section */}
           <motion.section 

@@ -6,9 +6,8 @@ import React from 'react';
     import C_Cube_Logo from '@/assets/C-Cube-Logo.png'
     const Footer = () => {
       const socialLinks = [
-        { icon: <Instagram size={24} />, href: "https://instagram.com", label: "Instagram" },
+        { icon: <Instagram size={24} />, href: "https://www.instagram.com/c_cube_eg/", label: "Instagram" },
         { icon: <Facebook size={24} />, href: "https://facebook.com", label: "Facebook" },
-        { icon: <Twitter size={24} />, href: "https://twitter.com", label: "Twitter" },
       ];
 
       const itemVariants = {
@@ -62,17 +61,17 @@ import React from 'react';
                     </motion.a>
                   ))}
                 </div>
-                <a href="mailto:hello@ccube.com" className="flex items-center space-x-2 hover:text-pastel-bg transition-colors">
+                {/* <a href="mailto:hello@ccube.com" className="flex items-center space-x-2 hover:text-pastel-bg transition-colors">
                   <Mail size={20} />
                   <span>hello@ccube.com</span>
-                </a>
+                </a> */}
               </motion.div>
             </div>
             <motion.div 
               variants={itemVariants}
               className="mt-10 pt-8 border-t border-pastel-dark/50 text-center text-sm"
             >
-              <p>&copy; {new Date().getFullYear()} C³ – C Cube. All rights reserved. Crafted with care in Hostinger Horizons.</p>
+              <p>&copy; {new Date().getFullYear()} C³ – C Cube. All rights reserved. Crafted with care.</p>
             </motion.div>
           </div>
         </motion.footer>
