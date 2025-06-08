@@ -1,0 +1,52 @@
+@tailwind base;
+    @tailwind components;
+    @tailwind utilities;
+
+    @layer base {
+      :root {
+        --background: 330 20% 98%; /* #F9F5F6 */
+        --foreground: 330 5% 20%; /* #383334 - Adjusted for readability */
+        --card: 330 20% 98%;
+        --card-foreground: 330 5% 20%;
+        --popover: 330 20% 98%;
+        --popover-foreground: 330 5% 20%;
+        --primary: 330 60% 85%; /* #FDCEDF */
+        --primary-foreground: 197 30% 22%; /* #2e474a */
+        --secondary: 330 40% 93%; /* #F8E8EE */
+        --secondary-foreground: 197 30% 22%;
+        --muted: 330 20% 90%; /* Lighter than background for subtle contrast */
+        --muted-foreground: 330 5% 40%;
+        --accent: 330 50% 80%; /* #F2BED1 */
+        --accent-foreground: 197 30% 22%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 330 20% 85%;
+        --input: 330 20% 85%;
+        --ring: 330 60% 85%;
+        --radius: 0.75rem;
+      }
+
+      .dark {
+        /* Add dark mode variables if needed in the future */
+      }
+    }
+
+    @layer base {
+      * {
+        @apply border-border;
+      }
+      body {
+        @apply bg-pastel-bg text-pastel-accent font-sans;
+        @apply antialiased;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        @apply font-heading;
+      }
+    }
+
+    .glassmorphism {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
