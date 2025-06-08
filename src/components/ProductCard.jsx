@@ -8,16 +8,8 @@ import React from 'react';
     const ProductCard = ({ product }) => {
       const { toast } = useToast();
 
-      // Debug logging
-      console.log('🎨 ProductCard rendering with product:', product);
-
       if (!product) {
-        console.error('❌ ProductCard: No product provided');
         return <div className="p-4 bg-red-100 text-red-600">Error: No product data</div>;
-      }
-
-      if (!product.name) {
-        console.warn('⚠️ ProductCard: Product missing name field:', product);
       }
 
       // Helper function to get display price for the card
@@ -74,8 +66,6 @@ import React from 'react';
           description: `${product.name} is now in your cart.`,
           duration: 3000,
         });
-        // Here you would typically dispatch an action to add to cart state
-        console.log(`Added ${product.name} to cart.`);
       };
 
       const cardVariants = {

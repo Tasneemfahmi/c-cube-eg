@@ -11,7 +11,6 @@ import { useToast } from "../components/ui/use-toast";
 import { db } from '../firebase.js';
 import { collection, getDocs } from 'firebase/firestore';
 import { addSampleProducts } from '../utils/sampleProducts.js';
-import { debugFirestore, checkFirebaseConfig } from '../utils/debugFirestore.js';
 import { fetchAllProducts } from '../utils/fetchProducts.js';
 
 const categories = ['All', 'Crochet', 'Candles', 'Crafts', 'Clay', 'Concrete', 'Canvas'];
@@ -108,20 +107,13 @@ const ShopPage = () => {
         const result = await fetchAllProducts();
 
         if (result.success) {
-          console.log(`✅ Successfully fetched ${result.totalProducts} products from ${result.totalDocuments} documents`);
           setAllProducts(result.products);
 
           // Update dynamic price range
           const newPriceRange = calculateDynamicPriceRange(result.products);
           setDynamicPriceRange(newPriceRange);
           setPriceRange(newPriceRange);
-
-          if (result.products.length === 0) {
-            console.log('⚠️ No products found. Documents exist but no product data extracted.');
-          }
         } else {
-          console.error('❌ Flexible fetch failed, trying simple approach...');
-
           // Fallback to simple approach
           const querySnapshot = await getDocs(collection(db, "products"));
           const products = querySnapshot.docs.map(doc => ({
@@ -129,7 +121,6 @@ const ShopPage = () => {
             ...doc.data()
           }));
 
-          console.log('📦 Simple fetch result:', products);
           setAllProducts(products);
 
           // Update dynamic price range for fallback case too
@@ -138,7 +129,6 @@ const ShopPage = () => {
           setPriceRange(newPriceRange);
         }
       } catch (err) {
-        console.error('❌ Error fetching products:', err);
         setError('Failed to load products. Please try again later.');
       } finally {
         setLoading(false);
@@ -189,7 +179,6 @@ const ShopPage = () => {
         });
       }
     } catch (err) {
-      console.error('Error adding sample products:', err);
       toast({
         title: "❌ Error",
         description: "Failed to add sample products. Please try again.",
@@ -197,50 +186,6 @@ const ShopPage = () => {
       });
     } finally {
       setAddingProducts(false);
-    }
-  };
-
-  const handleDebugFirestore = async () => {
-    console.log('🔍 Running Firestore Debug...');
-
-    // Check Firebase config first
-    const configResult = checkFirebaseConfig();
-    console.log('🔧 Config result:', configResult);
-
-    // Run debug
-    const debugResult = await debugFirestore();
-    console.log('🔍 Debug result:', debugResult);
-
-    toast({
-      title: "🔍 Debug Complete",
-      description: `Found ${debugResult.productsCount || 0} products. Check console for details.`,
-      duration: 5000,
-    });
-  };
-
-  const handleTestFlexibleFetch = async () => {
-    console.log('🧪 Testing flexible product fetching...');
-
-    const result = await fetchAllProducts();
-    console.log('🧪 Flexible fetch result:', result);
-
-    if (result.success) {
-      setAllProducts(result.products);
-      // Update dynamic price range
-      const newPriceRange = calculateDynamicPriceRange(result.products);
-      setDynamicPriceRange(newPriceRange);
-      setPriceRange(newPriceRange);
-      toast({
-        title: "🧪 Flexible Fetch Complete",
-        description: `Found ${result.totalProducts} products from ${result.totalDocuments} documents`,
-        duration: 5000,
-      });
-    } else {
-      toast({
-        title: "❌ Flexible Fetch Failed",
-        description: result.error,
-        duration: 5000,
-      });
     }
   };
 
@@ -269,20 +214,12 @@ const ShopPage = () => {
   };
 
   const filteredProducts = useMemo(() => {
-    console.log('🔍 Filtering products...');
-    console.log('📦 All products for filtering:', allProducts);
-    console.log('🏷️ Selected categories:', selectedCategories);
-    console.log('💰 Price range:', priceRange);
-
     const filtered = allProducts.filter(product => {
-      console.log('🔍 Checking product:', product);
-
       // Category filtering logic
       let categoryMatch = false;
 
       if (selectedCategories.includes('All')) {
         categoryMatch = true;
-        console.log(`🏷️ "All" selected - including "${product.name}"`);
       } else {
         // Check each selected category
         for (const selectedCategory of selectedCategories) {
@@ -314,29 +251,17 @@ const ShopPage = () => {
 
           if (categoryStartsMatch || idPrefixMatch || exactCategoryMatch) {
             categoryMatch = true;
-            console.log(`🏷️ Category match for "${product.name}": category="${productCategory}", id="${productId}", selectedCategory="${selectedCategory}", categoryStarts=${categoryStartsMatch}, idPrefix=${idPrefixMatch}, exactMatch=${exactCategoryMatch}`);
             break;
           }
-        }
-
-        if (!categoryMatch) {
-          console.log(`🏷️ No category match for "${product.name}": category="${product.category}", id="${product.id}", selectedCategories=${selectedCategories.join(', ')}`);
         }
       }
 
       // Price filtering - handle both string prices and price maps
       const priceMatch = productMatchesPriceRange(product, priceRange);
-      const productPrices = getProductPrices(product);
 
-      console.log(`💰 Price check for "${product.name}": price="${product.price}", extracted prices=${JSON.stringify(productPrices)}, range=[${priceRange[0]}, ${priceRange[1]}], match=${priceMatch}`);
-
-      const shouldInclude = categoryMatch && priceMatch;
-      console.log(`✅ Include "${product.name}": ${shouldInclude} (category: ${categoryMatch}, price: ${priceMatch})`);
-
-      return shouldInclude;
+      return categoryMatch && priceMatch;
     });
 
-    console.log('📦 Filtered products:', filtered);
     return filtered;
   }, [selectedCategories, priceRange, allProducts]);
 
@@ -414,83 +339,13 @@ const ShopPage = () => {
         </motion.aside>
 
         <main className="md:w-3/4">
-          <div className="md:hidden mb-6 flex justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-pastel-dark text-pastel-accent"
-              onClick={handleDebugFirestore}
-            >
-              🔍 Debug
-            </Button>
+          <div className="md:hidden mb-6 flex justify-end">
             <Button variant="outline" className="border-pastel-dark text-pastel-accent" onClick={() => setIsFilterOpen(true)}>
               <Filter size={18} className="mr-2" /> Filters
             </Button>
           </div>
 
-          {/* Debug buttons for desktop */}
-          <div className="hidden md:block mb-6 space-y-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-pastel-dark text-pastel-accent w-full"
-              onClick={handleDebugFirestore}
-            >
-              🔍 Debug Firestore Connection
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-blue-500 text-blue-600 w-full"
-              onClick={handleTestFlexibleFetch}
-            >
-              🧪 Test Flexible Fetch
-            </Button>
 
-            {/* Quick Filter Test Buttons */}
-            <div className="mt-4 space-y-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-green-500 text-green-600 w-full"
-                onClick={() => setSelectedCategories(['All'])}
-              >
-                🔄 Reset to "All"
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-purple-500 text-purple-600 w-full"
-                onClick={() => setSelectedCategories(['Crochet'])}
-              >
-                🧶 Test "Crochet" Filter
-              </Button>
-            </div>
-
-            {/* Debug Info Display */}
-            <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
-              <div><strong>Total Products:</strong> {allProducts.length}</div>
-              <div><strong>Filtered Products:</strong> {filteredProducts.length}</div>
-              <div><strong>Selected Categories:</strong> {selectedCategories.join(', ')}</div>
-              <div><strong>Price Range:</strong> ${priceRange[0]} - ${priceRange[1]}</div>
-              {allProducts.length > 0 && (
-                <div className="mt-2">
-                  <strong>Sample Product:</strong>
-                  <pre className="text-xs bg-white p-1 mt-1 rounded overflow-auto max-h-20">
-                    {JSON.stringify(allProducts[0], null, 2)}
-                  </pre>
-                </div>
-              )}
-              {allProducts.length > 1 && (
-                <div className="mt-2">
-                  <strong>Second Product:</strong>
-                  <pre className="text-xs bg-white p-1 mt-1 rounded overflow-auto max-h-20">
-                    {JSON.stringify(allProducts[1], null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </div>
 
           {loading ? (
             <motion.div
@@ -516,24 +371,18 @@ const ShopPage = () => {
               </Button>
             </motion.div>
           ) : filteredProducts.length > 0 ? (
-            <>
-              {console.log('🎨 Rendering products grid with', filteredProducts.length, 'products')}
-              <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-              >
-                {filteredProducts.map((product, index) => {
-                  console.log(`🎨 Rendering product ${index}:`, product);
-                  return (
-                    <motion.div key={product.id} variants={itemVariants} custom={index} className="animate-slide-in-up" style={{animationDelay: `${index * 0.05}s`}}>
-                      <ProductCard product={product} />
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+              {filteredProducts.map((product, index) => (
+                <motion.div key={product.id} variants={itemVariants} custom={index} className="animate-slide-in-up" style={{animationDelay: `${index * 0.05}s`}}>
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </motion.div>
           ) : allProducts.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
@@ -543,14 +392,7 @@ const ShopPage = () => {
             >
               <p className="text-xl text-pastel-accent/70 mb-4">No products found in the database.</p>
               <p className="text-sm text-pastel-accent/50 mb-6">Add some products to Firestore to see them here!</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  onClick={handleDebugFirestore}
-                  variant="outline"
-                  className="border-pastel-dark text-pastel-accent hover:bg-pastel-light"
-                >
-                  🔍 Debug Firestore
-                </Button>
+              <div className="flex justify-center">
                 <Button
                   onClick={handleAddSampleProducts}
                   disabled={addingProducts}

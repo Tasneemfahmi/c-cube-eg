@@ -24,44 +24,31 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log(`🔍 Fetching product details for ID: ${productId}`);
-
         // Try flexible fetching first
         const result = await fetchAllProducts();
         let products = [];
 
         if (result.success) {
           products = result.products;
-          console.log(`✅ Flexible fetch found ${products.length} products`);
         } else {
-          console.log('❌ Flexible fetch failed, trying simple approach...');
           // Fallback to simple approach
           const querySnapshot = await getDocs(collection(db, "products"));
           products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          console.log(`📦 Simple fetch found ${products.length} products`);
         }
 
         setAllProducts(products);
 
         // Find the specific product
-        console.log(`🔍 Looking for product with ID: ${productId}`);
-        console.log('📦 Available product IDs:', products.map(p => p.id));
-
         const foundProduct = products.find(p =>
           p.id === productId ||
           p.id.toString() === productId ||
           p.id === productId.toString()
         );
 
-        console.log('🎯 Found product:', foundProduct);
         setProduct(foundProduct);
 
-        if (!foundProduct) {
-          console.warn(`⚠️ Product with ID "${productId}" not found`);
-        }
-
       } catch (error) {
-        console.error("❌ Error fetching products:", error);
+        // Error handling - could set an error state here if needed
       } finally {
         setLoading(false);
       }
@@ -174,8 +161,6 @@ const ProductDetailPage = () => {
   // Initialize selected options when product loads
   useEffect(() => {
     if (product) {
-      console.log('🎯 Initializing product options:', product);
-
       // Initialize color
       if (product.colors && product.colors.length > 0) {
         setSelectedColor(product.colors[0]);
@@ -198,9 +183,6 @@ const ProductDetailPage = () => {
       // For multi-size products without a selected size, show the first available price
       const price = calculatePrice(product, initialSize);
       setCurrentPrice(price);
-
-      console.log('🎯 Initialized - Color:', product.colors?.[0], 'Size:', initialSize, 'Price:', price);
-      console.log('🎯 Product price structure:', product.price);
     }
   }, [product]);
 
@@ -209,15 +191,6 @@ const ProductDetailPage = () => {
     if (product) {
       const price = calculatePrice(product, selectedSize);
       setCurrentPrice(price);
-      console.log('💰 Price updated for size', selectedSize, ':', price);
-      console.log('💰 Product price structure:', product.price);
-      console.log('💰 Product pricing structure:', product.pricing);
-
-      // Log price range for multi-size products
-      const priceRange = getPriceRange(product);
-      if (priceRange) {
-        console.log('💰 Price range:', priceRange);
-      }
     }
   }, [selectedSize, product]);
   
@@ -247,14 +220,8 @@ const ProductDetailPage = () => {
       <div className="container mx-auto text-center py-20">
         <h1 className="text-2xl font-bold text-pastel-accent mb-4">Product Not Found</h1>
         <p className="text-lg text-pastel-accent/70 mb-6">
-          The product with ID "{productId}" could not be found.
+          The product you're looking for could not be found.
         </p>
-        <div className="space-y-2 text-sm text-pastel-accent/60">
-          <p>Available products: {allProducts.length}</p>
-          {allProducts.length > 0 && (
-            <p>Available IDs: {allProducts.map(p => p.id).join(', ')}</p>
-          )}
-        </div>
         <Link to="/shop" className="inline-block mt-6">
           <Button className="bg-pastel-dark text-white hover:bg-pastel-accent">
             Back to Shop

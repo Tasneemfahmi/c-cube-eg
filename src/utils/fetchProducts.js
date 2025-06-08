@@ -9,23 +9,15 @@ import { db } from '../firebase.js';
  */
 export const fetchAllProducts = async () => {
   try {
-    console.log('🔍 Fetching products with flexible structure detection...');
-    
     const querySnapshot = await getDocs(collection(db, "products"));
     const allProducts = [];
-    
-    console.log(`📦 Found ${querySnapshot.size} documents in products collection`);
-    
+
     querySnapshot.forEach((doc) => {
       const docData = doc.data();
       const docId = doc.id;
-      
-      console.log(`📄 Processing document: ${docId}`);
-      console.log(`📄 Document data:`, docData);
-      
+
       // Strategy 1: Check if document contains an array of products
       if (docData.products && Array.isArray(docData.products)) {
-        console.log(`📦 Found 'products' array with ${docData.products.length} items in document ${docId}`);
         docData.products.forEach((product, index) => {
           const productWithId = {
             ...product,
@@ -34,7 +26,6 @@ export const fetchAllProducts = async () => {
             sourceDocument: docId,
             sourceIndex: index
           };
-          console.log(`📦 Adding product from array:`, productWithId);
           allProducts.push(productWithId);
         });
       }
