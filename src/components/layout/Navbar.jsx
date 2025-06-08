@@ -4,10 +4,12 @@ import React, { useState } from 'react';
     import { Menu, X, ShoppingBag } from 'lucide-react';
     import { Button } from '@/components/ui/button';
     import CCubeLogo from '@/assets/CCubeLogo';
-    import C_Cube_Logo from '@/assets/C-Cube-Logo.png'
+    import C_Cube_Logo from '@/assets/C-Cube-Logo.png';
+    import { useCart } from '../../contexts/CartContext';
 
     const Navbar = () => {
       const [isOpen, setIsOpen] = useState(false);
+      const { itemCount, isLoading } = useCart();
 
       const navLinks = [
         { name: 'Home', path: '/' },
@@ -62,14 +64,36 @@ import React, { useState } from 'react';
               </div>
 
               <div className="hidden md:flex items-center">
-                <Button variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50">
-                  <ShoppingBag size={24} />
+                <Button asChild variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 relative">
+                  <Link to="/cart">
+                    <ShoppingBag size={24} />
+                    {isLoading ? (
+                      <span className="absolute -top-1 -right-1 bg-pastel-accent text-pastel-bg text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-3 w-3 border border-pastel-bg border-t-transparent"></div>
+                      </span>
+                    ) : itemCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-pastel-accent text-pastel-bg text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+                        {itemCount > 99 ? '99+' : itemCount}
+                      </span>
+                    )}
+                  </Link>
                 </Button>
               </div>
 
               <div className="md:hidden flex items-center">
-                 <Button variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 mr-2">
-                  <ShoppingBag size={24} />
+                 <Button asChild variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 mr-2 relative">
+                  <Link to="/cart">
+                    <ShoppingBag size={24} />
+                    {isLoading ? (
+                      <span className="absolute -top-1 -right-1 bg-pastel-accent text-pastel-bg text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-3 w-3 border border-pastel-bg border-t-transparent"></div>
+                      </span>
+                    ) : itemCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-pastel-accent text-pastel-bg text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+                        {itemCount > 99 ? '99+' : itemCount}
+                      </span>
+                    )}
+                  </Link>
                 </Button>
                 <Button
                   variant="ghost"

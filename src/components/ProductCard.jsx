@@ -4,9 +4,11 @@ import React from 'react';
     import { Button } from '@/components/ui/button';
     import { Heart, ShoppingCart } from 'lucide-react';
     import { useToast } from "@/components/ui/use-toast";
+    import { useCart } from '../contexts/CartContext';
 
     const ProductCard = ({ product }) => {
       const { toast } = useToast();
+      const { addItem } = useCart();
 
       if (!product) {
         return <div className="p-4 bg-red-100 text-red-600">Error: No product data</div>;
@@ -59,8 +61,28 @@ import React from 'react';
       };
 
       const handleAddToCart = (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         e.stopPropagation();
+
+        // For ProductCard, we'll use default selections since user can't choose options here
+        // The cart context will automatically assign default values for any missing options
+        const hasMultipleOptions = (product.colors && product.colors.length > 1) ||
+                                  (Array.isArray(product.sizes) && product.sizes.length > 1) ||
+                                  (Array.isArray(product.sizeOptions) && product.sizeOptions.length > 1);
+
+        if (hasMultipleOptions) {
+          // If product has multiple options, redirect to product detail page
+          toast({
+            title: "🔍 Multiple Options Available",
+            description: "Click on the product to select your preferred options.",
+            duration: 3000,
+          });
+          return;
+        }
+
+        // Add item to cart with default quantity of 1 (context will handle default options)
+        addItem(product, 1);
+
         toast({
           title: "💖 Added to Cart!",
           description: `${product.name} is now in your cart.`,

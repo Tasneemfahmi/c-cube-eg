@@ -8,10 +8,12 @@ import ProductCard from '@/components/ProductCard';
 import { db } from '../firebase.js';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { fetchAllProducts } from '../utils/fetchProducts.js';
+import { useCart } from '../contexts/CartContext';
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
   const { toast } = useToast();
+  const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
   const [selectedColor, setSelectedColor] = useState('');
@@ -63,9 +65,37 @@ const ProductDetailPage = () => {
   };
   
   const handleAddToCart = () => {
+    // Validate that all required options are selected
+    const hasColors = product.colors && product.colors.length > 0;
+    const hasSizes = (Array.isArray(product.sizes) && product.sizes.length > 0) ||
+                    (Array.isArray(product.sizeOptions) && product.sizeOptions.length > 0);
+
+    // Check if color is required but not selected
+    if (hasColors && !selectedColor) {
+      toast({
+        title: "⚠️ Color Required",
+        description: "Please select a color before adding to cart.",
+        duration: 3000,
+      });
+      return;
+    }
+
+    // Check if size is required but not selected
+    if (hasSizes && !selectedSize) {
+      toast({
+        title: "⚠️ Size Required",
+        description: "Please select a size before adding to cart.",
+        duration: 3000,
+      });
+      return;
+    }
+
     const options = [];
     if (selectedColor) options.push(selectedColor);
     if (selectedSize) options.push(selectedSize);
+
+    // Add item to cart with selected options
+    addItem(product, quantity, selectedSize, selectedColor);
 
     toast({
       title: "💖 Added to Cart!",
