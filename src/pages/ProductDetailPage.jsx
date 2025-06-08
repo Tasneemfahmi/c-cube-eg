@@ -318,7 +318,7 @@ const ProductDetailPage = () => {
           )}
           <div className="space-y-1">
             <p className="text-2xl font-semibold text-pastel-dark">
-              ${currentPrice.toFixed(2)}
+              £E{currentPrice.toFixed(2)}
               {selectedSize && (typeof product.price === 'object' || product.pricing) && (
                 <span className="text-sm text-pastel-accent/70 ml-2">
                   (Size: {selectedSize})
@@ -330,7 +330,7 @@ const ProductDetailPage = () => {
               if (priceRange && !selectedSize) {
                 return (
                   <p className="text-sm text-pastel-accent/70">
-                    Price range: ${priceRange.min.toFixed(2)} - ${priceRange.max.toFixed(2)}
+                    Price range: £E{priceRange.min.toFixed(2)} - £E{priceRange.max.toFixed(2)}
                   </p>
                 );
               }
@@ -395,7 +395,7 @@ const ProductDetailPage = () => {
                       {size}
                       {hasValidPrice ? (
                         <span className="ml-1 text-xs">
-                          (${sizePrice.toFixed(2)})
+                          (£E{sizePrice.toFixed(2)})
                         </span>
                       ) : (typeof product.price === 'object' || product.pricing) && (
                         <span className="ml-1 text-xs text-red-500">
@@ -438,7 +438,7 @@ const ProductDetailPage = () => {
                       {size}
                       {hasValidPrice ? (
                         <span className="ml-1 text-xs">
-                          (${sizePrice.toFixed(2)})
+                          (£E{sizePrice.toFixed(2)})
                         </span>
                       ) : (typeof product.price === 'object' || product.pricing) && (
                         <span className="ml-1 text-xs text-red-500">

@@ -329,11 +329,11 @@ const ShopPage = () => {
               className="[&>span:first-child]:h-1 [&>span:first-child]:bg-pastel-medium [&_[role=slider]]:bg-pastel-dark [&_[role=slider]]:border-pastel-dark [&_[role=slider]]:shadow-md"
             />
             <div className="flex justify-between text-sm text-pastel-accent/80 mt-2">
-              <span>${priceRange[0]}</span>
-              <span>${priceRange[1]}</span>
+              <span>£E{priceRange[0]}</span>
+              <span>£E{priceRange[1]}</span>
             </div>
             <div className="text-xs text-pastel-accent/60 mt-1 text-center">
-              Range: ${dynamicPriceRange[0]} - ${dynamicPriceRange[1]}
+              Range: £E{dynamicPriceRange[0]} - £E{dynamicPriceRange[1]}
             </div>
           </div>
         </motion.aside>

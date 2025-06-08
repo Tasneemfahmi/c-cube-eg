@@ -139,8 +139,8 @@ import React from 'react';
               <p className="text-sm text-pastel-accent/70 mb-3 flex-grow line-clamp-2">{product.description}</p>
               
               <div className="mt-auto">
-                <p className="text-xl font-bold text-pastel-accent mb-4">${getDisplayPrice(product)}</p>
-                <Button 
+                <p className="text-xl font-bold text-pastel-accent mb-4">£E{getDisplayPrice(product)}</p>
+                <Button
                   onClick={handleAddToCart} 
                   className="w-full bg-pastel-dark text-white hover:bg-pastel-accent transition-colors duration-300 group-hover:scale-105 transform"
                   aria-label={`Add ${product.name} to cart`}
