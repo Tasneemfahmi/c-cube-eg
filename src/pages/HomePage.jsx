@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
     import { collection, getDocs } from 'firebase/firestore';
     import { db } from '../firebase.js';
     import { addSampleProducts } from '../utils/sampleProducts.js';
+    import PastelConcreteShells from '../assets/Pastel Concrete Shells.jpg';
 
     // Fallback placeholder products if no Firestore products are found
     const placeholderProducts = [
@@ -163,7 +164,7 @@ import React, { useState, useEffect } from 'react';
             className="bg-gradient-to-br from-pastel-light via-pastel-medium to-pastel-dark py-20 md:py-32 text-center relative overflow-hidden"
           >
             <div className="absolute inset-0 opacity-30">
-              <img  class="w-full h-full object-cover" alt="Abstract pastel background texture" src="https://images.unsplash.com/photo-1627052046046-c506756f1ab2" />
+              <img  class="w-full h-full object-cover" alt="Pastel Concrete Shells" src={PastelConcreteShells} />
             </div>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl md:text-6xl font-bold text-pastel-accent mb-6">
