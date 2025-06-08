@@ -133,6 +133,28 @@ const sampleProducts = [
   }
 ];
 
+// Sample discount data
+export const sampleDiscounts = [
+  {
+    active: true,
+    applicableProducts: ["crob01", "crob02"],
+    buyQuantity: 3,
+    freeQuantity: 1,
+    type: "buyXgetY",
+    name: "Buy 3 Get 1 Free - Crochet Bags",
+    description: "Buy any 3 crochet bags and get 1 free!"
+  },
+  {
+    active: true,
+    applicableProducts: ["conc01", "conc02"],
+    buyQuantity: 2,
+    freeQuantity: 1,
+    type: "buyXgetY",
+    name: "Buy 2 Get 1 Free - Concrete Items",
+    description: "Buy any 2 concrete items and get 1 free!"
+  }
+];
+
 // Function to check if products already exist
 export const checkProductsExist = async () => {
   try {
@@ -195,6 +217,58 @@ export const getAllProducts = async () => {
     return products;
   } catch (error) {
     console.error("Error getting products:", error);
+    return [];
+  }
+};
+
+// Function to check if discounts already exist
+export const checkDiscountsExist = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "discounts"));
+    return querySnapshot.size > 0;
+  } catch (error) {
+    console.error("Error checking discounts:", error);
+    return false;
+  }
+};
+
+// Function to add sample discounts to Firestore
+export const addSampleDiscounts = async () => {
+  try {
+    console.log('Adding sample discounts to Firestore...');
+
+    const promises = sampleDiscounts.map(discount =>
+      addDoc(collection(db, "discounts"), discount)
+    );
+
+    await Promise.all(promises);
+
+    console.log('All sample discounts added successfully!');
+    return {
+      success: true,
+      message: `Successfully added ${sampleDiscounts.length} discounts to Firestore!`
+    };
+
+  } catch (error) {
+    console.error("Error adding sample discounts:", error);
+    return {
+      success: false,
+      message: `Error adding discounts: ${error.message}`
+    };
+  }
+};
+
+// Function to get all discounts (for testing)
+export const getAllDiscounts = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "discounts"));
+    const discounts = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    return discounts;
+  } catch (error) {
+    console.error("Error getting discounts:", error);
     return [];
   }
 };

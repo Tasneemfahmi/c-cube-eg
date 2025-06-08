@@ -5,6 +5,7 @@ import React from 'react';
     import { Heart, ShoppingCart } from 'lucide-react';
     import { useToast } from "@/components/ui/use-toast";
     import { useCart } from '../contexts/CartContext';
+    import { DiscountBadge } from './DiscountBanner';
 
     const ProductCard = ({ product }) => {
       const { toast } = useToast();
@@ -114,6 +115,8 @@ import React from 'react';
         >
           <Link to={`/shop/${product.id}`} className="flex flex-col h-full">
             <div className="relative overflow-hidden aspect-[4/3]">
+              {/* Discount Badge */}
+              <DiscountBadge productId={product.id} />
               <motion.div variants={imageVariants} className="w-full h-full">
                 <img
                   className="w-full h-full object-cover"

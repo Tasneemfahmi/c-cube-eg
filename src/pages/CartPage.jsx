@@ -4,12 +4,32 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { ShoppingBag, ArrowLeft, Trash2, Plus, Minus, Database } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
+import { useCartWithDiscounts } from '../contexts/CartWithDiscountsProvider';
 import { testCartFirestore, checkFirestoreConnection } from '../utils/testCartFirestore';
 import { cleanupExpiredCarts } from '../utils/cartCleanup';
+import DiscountSummary, { FreeItemsDisplay } from '../components/DiscountSummary';
+import { CartDiscountBanner } from '../components/DiscountBanner';
 
 const CartPage = () => {
-  const { items, itemCount, subtotal, updateQuantity, removeItem, clearCart, getItemPrice, isLoading, expirationInfo, formatTimeRemaining } = useCart();
+  const {
+    items,
+    itemCount,
+    subtotalWithoutDiscounts,
+    subtotalWithDiscounts,
+    discountSavings,
+    tax,
+    total,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    getItemPrice,
+    isLoading,
+    expirationInfo,
+    formatTimeRemaining,
+    discountData,
+    discountEligibility,
+    hasDiscounts
+  } = useCartWithDiscounts();
   const { toast } = useToast();
 
   const containerVariants = {
@@ -85,10 +105,7 @@ const CartPage = () => {
     });
   };
 
-  // Calculate tax and total (assuming 14% tax rate for Egypt)
-  const taxRate = 0.14;
-  const tax = subtotal * taxRate;
-  const total = subtotal + tax;
+  // Tax and total are now calculated in the CartWithDiscountsProvider
 
   // Show loading state while cart is being loaded from Firestore
   if (isLoading) {
@@ -165,9 +182,18 @@ const CartPage = () => {
             </Button>
           </motion.div>
 
+          {/* Discount Banner for potential savings */}
+          <CartDiscountBanner cartItems={items} getItemPrice={getItemPrice} />
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
-            <motion.div variants={itemVariants} className="lg:col-span-2">
+            <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
+              {/* Discount Summary */}
+              <DiscountSummary discountData={discountData} />
+
+              {/* Free Items Display */}
+              <FreeItemsDisplay freeItems={discountData.freeItems} />
+
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
@@ -291,8 +317,25 @@ const CartPage = () => {
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between text-pastel-accent">
                     <span>Subtotal ({itemCount} items)</span>
-                    <span>£E{subtotal.toFixed(2)}</span>
+                    <span>£E{subtotalWithoutDiscounts.toFixed(2)}</span>
                   </div>
+
+                  {/* Show discount savings if any */}
+                  {hasDiscounts && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount Savings</span>
+                      <span>-£E{discountSavings.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {/* Show subtotal after discounts if different */}
+                  {hasDiscounts && (
+                    <div className="flex justify-between text-pastel-accent font-medium">
+                      <span>Subtotal after discounts</span>
+                      <span>£E{subtotalWithDiscounts.toFixed(2)}</span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between text-pastel-accent">
                     <span>Tax (14%)</span>
                     <span>£E{tax.toFixed(2)}</span>
@@ -302,6 +345,17 @@ const CartPage = () => {
                     <span>Total</span>
                     <span>£E{total.toFixed(2)}</span>
                   </div>
+
+                  {/* Show total savings summary */}
+                  {hasDiscounts && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                      <div className="text-center">
+                        <p className="text-sm text-green-700">🎉 You saved</p>
+                        <p className="text-lg font-bold text-green-600">£E{discountSavings.toFixed(2)}</p>
+                        <p className="text-xs text-green-600">with active discounts!</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <Button

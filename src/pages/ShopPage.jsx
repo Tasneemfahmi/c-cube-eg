@@ -10,8 +10,9 @@ import { Slider } from "../components/ui/slider";
 import { useToast } from "../components/ui/use-toast";
 import { db } from '../firebase.js';
 import { collection, getDocs } from 'firebase/firestore';
-import { addSampleProducts } from '../utils/sampleProducts.js';
+import { addSampleProducts, addSampleDiscounts, checkDiscountsExist } from '../utils/sampleProducts.js';
 import { fetchAllProducts } from '../utils/fetchProducts.js';
+import { DiscountCarousel } from '../components/DiscountBanner.jsx';
 
 const categories = ['All', 'Crochet', 'Candles', 'Crafts', 'Clay', 'Concrete', 'Canvas'];
 
@@ -26,6 +27,7 @@ const ShopPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [addingProducts, setAddingProducts] = useState(false);
+  const [addingDiscounts, setAddingDiscounts] = useState(false);
 
   // Helper function to extract all possible prices from a product
   const getProductPrices = (product) => {
@@ -189,6 +191,47 @@ const ShopPage = () => {
     }
   };
 
+  const handleAddSampleDiscounts = async () => {
+    try {
+      setAddingDiscounts(true);
+
+      // Check if discounts already exist
+      const discountsExist = await checkDiscountsExist();
+      if (discountsExist) {
+        toast({
+          title: "ℹ️ Info",
+          description: "Sample discounts already exist in the database.",
+          duration: 3000,
+        });
+        return;
+      }
+
+      const result = await addSampleDiscounts();
+
+      if (result.success) {
+        toast({
+          title: "🎉 Success!",
+          description: result.message,
+          duration: 3000,
+        });
+      } else {
+        toast({
+          title: "❌ Error",
+          description: result.message,
+          duration: 5000,
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "❌ Error",
+        description: "Failed to add sample discounts. Please try again.",
+        duration: 5000,
+      });
+    } finally {
+      setAddingDiscounts(false);
+    }
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryFromUrl = params.get('category');
@@ -277,14 +320,24 @@ const ShopPage = () => {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 animate-fade-in">
-      <motion.h1 
+      <motion.h1
         initial={{ opacity:0, y: -30 }}
         animate={{ opacity:1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="text-4xl md:text-5xl font-bold text-pastel-accent text-center mb-12"
+        className="text-4xl md:text-5xl font-bold text-pastel-accent text-center mb-8"
       >
         Our Handmade Collection
       </motion.h1>
+
+      {/* Discount Carousel */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="mb-8"
+      >
+        <DiscountCarousel className="max-w-6xl mx-auto" />
+      </motion.div>
 
       <div className="flex flex-col md:flex-row gap-8">
         <motion.aside 
@@ -391,8 +444,8 @@ const ShopPage = () => {
               className="text-center py-20"
             >
               <p className="text-xl text-pastel-accent/70 mb-4">No products found in the database.</p>
-              <p className="text-sm text-pastel-accent/50 mb-6">Add some products to Firestore to see them here!</p>
-              <div className="flex justify-center">
+              <p className="text-sm text-pastel-accent/50 mb-6">Add some products and discounts to Firestore to see them here!</p>
+              <div className="flex justify-center gap-4 flex-wrap">
                 <Button
                   onClick={handleAddSampleProducts}
                   disabled={addingProducts}
@@ -405,6 +458,21 @@ const ShopPage = () => {
                     </>
                   ) : (
                     'Add Sample Products'
+                  )}
+                </Button>
+                <Button
+                  onClick={handleAddSampleDiscounts}
+                  disabled={addingDiscounts}
+                  variant="outline"
+                  className="border-pastel-dark text-pastel-accent hover:bg-pastel-light disabled:opacity-50"
+                >
+                  {addingDiscounts ? (
+                    <>
+                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-pastel-accent mr-2"></div>
+                      Adding Discounts...
+                    </>
+                  ) : (
+                    'Add Sample Discounts'
                   )}
                 </Button>
               </div>

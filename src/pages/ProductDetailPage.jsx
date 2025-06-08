@@ -9,6 +9,7 @@ import { db } from '../firebase.js';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { fetchAllProducts } from '../utils/fetchProducts.js';
 import { useCart } from '../contexts/CartContext';
+import DiscountBanner from '../components/DiscountBanner';
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
@@ -370,6 +371,9 @@ const ProductDetailPage = () => {
           <p className="text-pastel-accent/80 leading-relaxed">
             {product.description || 'No description available.'}
           </p>
+
+          {/* Discount Banner for this product */}
+          <DiscountBanner productId={product.id} />
 
           {/* Color Selection */}
           {product.colors && product.colors.length > 0 && (

@@ -11,30 +11,36 @@ import CartPage from './pages/CartPage';
 import { Toaster } from './components/ui/toaster';
 import ScrollToTop from './components/ScrollToTop';
 import { CartProvider } from './contexts/CartContext';
+import { DiscountProvider } from './contexts/DiscountContext';
+import { CartWithDiscountsProvider } from './contexts/CartWithDiscountsProvider';
 // Import Firebase from the centralized file
 import './firebase';
 
 function App() {
   return (
     <CartProvider>
-      <Router>
-        <ScrollToTop />
-        <div className="flex flex-col min-h-screen bg-pastel-bg">
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/shop" element={<ShopPage />} />
-              <Route path="/shop/:productId" element={<ProductDetailPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-            </Routes>
-          </main>
-          <Footer />
-          <Toaster />
-        </div>
-      </Router>
+      <DiscountProvider>
+        <CartWithDiscountsProvider>
+          <Router>
+            <ScrollToTop />
+            <div className="flex flex-col min-h-screen bg-pastel-bg">
+              <Navbar />
+              <main className="flex-grow">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/shop" element={<ShopPage />} />
+                  <Route path="/shop/:productId" element={<ProductDetailPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                </Routes>
+              </main>
+              <Footer />
+              <Toaster />
+            </div>
+          </Router>
+        </CartWithDiscountsProvider>
+      </DiscountProvider>
     </CartProvider>
   );
 }
