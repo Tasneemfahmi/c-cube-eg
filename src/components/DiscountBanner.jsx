@@ -179,7 +179,7 @@ export const DiscountCarousel = ({ className = "" }) => {
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -100 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
           className={`absolute inset-0 bg-gradient-to-r ${banners[currentSlide].gradient} flex items-center justify-center px-6`}
         >
           <div className="flex items-center space-x-3 sm:space-x-4 text-center w-full">

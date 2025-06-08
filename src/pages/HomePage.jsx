@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
     import { Link } from 'react-router-dom';
     import { motion } from 'framer-motion';
     import { Button } from '@/components/ui/button';
     import { Heart, ShoppingBag, Gift } from 'lucide-react';
-    import ProductCard from '@/components/ProductCard'; 
+    import ProductCard from '@/components/ProductCard';
     import { useToast } from "@/components/ui/use-toast";
+    import { fetchAllProducts } from '../utils/fetchProducts.js';
+    import { collection, getDocs } from 'firebase/firestore';
+    import { db } from '../firebase.js';
+    import { addSampleProducts } from '../utils/sampleProducts.js';
 
+    // Fallback placeholder products if no Firestore products are found
     const placeholderProducts = [
       { id: 1, name: "Pastel Crochet Bag", category: "Crochet", price: "25.00", imageSrc: "crochet_bag_pastel", description: "A charming handmade crochet bag in soft pastel hues." },
       { id: 2, name: "Scented Soy Candle", category: "Candles", price: "15.00", imageSrc: "scented_candle_pastel", description: "Relaxing scented soy candle, perfect for cozy evenings." },
@@ -15,6 +20,107 @@ import React from 'react';
 
     const HomePage = () => {
       const { toast } = useToast();
+      const [products, setProducts] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [addingProducts, setAddingProducts] = useState(false);
+
+      // Fetch products from Firestore on component mount
+      useEffect(() => {
+        const fetchProducts = async () => {
+          try {
+            setLoading(true);
+            setError(null);
+            console.log('🏠 HomePage: Fetching products from Firestore...');
+
+            // Try the flexible fetching first
+            const result = await fetchAllProducts();
+
+            if (result.success && result.products.length > 0) {
+              // Filter for featured products, or take first 4 if no featured products
+              const featuredProducts = result.products.filter(product => product.featured === true);
+              const displayProducts = featuredProducts.length > 0
+                ? featuredProducts.slice(0, 4)
+                : result.products.slice(0, 4);
+
+              setProducts(displayProducts);
+              console.log(`🏠 HomePage: Loaded ${displayProducts.length} featured products`);
+            } else {
+              // Fallback to simple approach
+              console.log('🏠 HomePage: Trying fallback approach...');
+              const querySnapshot = await getDocs(collection(db, "products"));
+              const allProducts = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }));
+
+              if (allProducts.length > 0) {
+                const featuredProducts = allProducts.filter(product => product.featured === true);
+                const displayProducts = featuredProducts.length > 0
+                  ? featuredProducts.slice(0, 4)
+                  : allProducts.slice(0, 4);
+
+                setProducts(displayProducts);
+                console.log(`🏠 HomePage: Loaded ${displayProducts.length} products (fallback)`);
+              } else {
+                // Use placeholder products if no Firestore products found
+                setProducts(placeholderProducts);
+                console.log('🏠 HomePage: No Firestore products found, using placeholders');
+              }
+            }
+          } catch (err) {
+            console.error('🏠 HomePage: Error fetching products:', err);
+            setError('Failed to load products');
+            // Use placeholder products on error
+            setProducts(placeholderProducts);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        fetchProducts();
+      }, []);
+
+      // Function to add sample products
+      const handleAddSampleProducts = async () => {
+        try {
+          setAddingProducts(true);
+          const result = await addSampleProducts();
+
+          if (result.success) {
+            toast({
+              title: "✅ Success!",
+              description: result.message,
+              duration: 3000,
+            });
+
+            // Refresh products after adding
+            const refreshResult = await fetchAllProducts();
+            if (refreshResult.success && refreshResult.products.length > 0) {
+              const featuredProducts = refreshResult.products.filter(product => product.featured === true);
+              const displayProducts = featuredProducts.length > 0
+                ? featuredProducts.slice(0, 4)
+                : refreshResult.products.slice(0, 4);
+
+              setProducts(displayProducts);
+            }
+          } else {
+            toast({
+              title: "❌ Error",
+              description: result.message,
+              duration: 5000,
+            });
+          }
+        } catch (err) {
+          toast({
+            title: "❌ Error",
+            description: "Failed to add sample products. Please try again.",
+            duration: 5000,
+          });
+        } finally {
+          setAddingProducts(false);
+        }
+      };
 
       const containerVariants = {
         hidden: { opacity: 0 },
@@ -79,26 +185,81 @@ import React from 'react';
           {/* Featured Products Section */}
           <section className="py-16 md:py-24 bg-pastel-bg">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold text-pastel-accent text-center mb-12">
+              <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold text-pastel-accent text-center mb-4">
                 Featured Treasures
               </motion.h2>
-              <motion.div 
-                variants={containerVariants} 
+
+            
+              {loading ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pastel-accent mb-4"></div>
+                  <p className="text-lg text-pastel-accent/70">Loading featured products...</p>
+                </motion.div>
+              ) : error ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <p className="text-lg text-pastel-accent/70 mb-4">Unable to load products</p>
+                  <p className="text-sm text-pastel-accent/50">Showing sample products instead</p>
+                </motion.div>
+              ) : null}
+
+              <motion.div
+                variants={containerVariants}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
               >
-                {placeholderProducts.map((product, index) => (
+                {products.map((product, index) => (
                    <motion.div key={product.id} variants={itemVariants} custom={index} className="animate-slide-in-up" style={{animationDelay: `${index * 0.1}s`}}>
                     <ProductCard product={product} />
                   </motion.div>
                 ))}
               </motion.div>
-              <motion.div variants={itemVariants} className="text-center mt-12">
-                <Button asChild variant="outline" size="lg" className="border-pastel-dark text-pastel-accent hover:bg-pastel-dark hover:text-pastel-bg shadow-md">
-                  <Link to="/shop">
-                    Explore All Products <Heart size={18} className="ml-2 fill-current text-pastel-dark group-hover:text-pastel-bg" />
-                  </Link>
-                </Button>
-              </motion.div>
+
+              {products.length === 0 && !loading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <p className="text-lg text-pastel-accent/70 mb-4">No featured products available</p>
+                  <p className="text-sm text-pastel-accent/50 mb-6">Add some products to your Firestore database to see them here!</p>
+                  <div className="flex justify-center gap-4 flex-wrap">
+                    <Button
+                      onClick={handleAddSampleProducts}
+                      disabled={addingProducts}
+                      className="bg-pastel-dark text-white hover:bg-pastel-accent disabled:opacity-50"
+                    >
+                      {addingProducts ? (
+                        <>
+                          <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Adding Products...
+                        </>
+                      ) : (
+                        'Add Sample Products'
+                      )}
+                    </Button>
+                    <Button asChild variant="outline" className="border-pastel-dark text-pastel-accent hover:bg-pastel-dark hover:text-pastel-bg">
+                      <Link to="/shop">Browse All Products</Link>
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+
+              {products.length > 0 && (
+                <motion.div variants={itemVariants} className="text-center mt-12">
+                  <Button asChild variant="outline" size="lg" className="border-pastel-dark text-pastel-accent hover:bg-pastel-dark hover:text-pastel-bg shadow-md">
+                    <Link to="/shop">
+                      Explore All Products <Heart size={18} className="ml-2 fill-current text-pastel-dark group-hover:text-pastel-bg" />
+                    </Link>
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </section>
 

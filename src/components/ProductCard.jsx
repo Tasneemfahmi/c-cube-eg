@@ -69,7 +69,8 @@ import React from 'react';
         // The cart context will automatically assign default values for any missing options
         const hasMultipleOptions = (product.colors && product.colors.length > 1) ||
                                   (Array.isArray(product.sizes) && product.sizes.length > 1) ||
-                                  (Array.isArray(product.sizeOptions) && product.sizeOptions.length > 1);
+                                  (Array.isArray(product.sizeOptions) && product.sizeOptions.length > 1) ||
+                                  (product.scent && product.scent.length > 1);
 
         if (hasMultipleOptions) {
           // If product has multiple options, redirect to product detail page

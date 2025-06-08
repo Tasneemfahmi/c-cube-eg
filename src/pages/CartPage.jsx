@@ -253,6 +253,11 @@ const CartPage = () => {
                                   Color: {item.selectedColor}
                                 </span>
                               )}
+                              {item.selectedScent && item.selectedScent !== 'Default' && (
+                                <span className="px-2 py-1 bg-pastel-light text-pastel-accent text-xs rounded">
+                                  Scent: {item.selectedScent}
+                                </span>
+                              )}
                             </div>
 
                             {/* Price and Quantity Controls */}

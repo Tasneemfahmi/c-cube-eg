@@ -80,14 +80,15 @@ const CART_ACTIONS = {
 const cartReducer = (state, action) => {
   switch (action.type) {
     case CART_ACTIONS.ADD_ITEM: {
-      const { product, quantity = 1, selectedSize, selectedColor } = action.payload;
+      const { product, quantity = 1, selectedSize, selectedColor, selectedScent } = action.payload;
 
       // Ensure all options have values (no null/undefined)
       const finalSize = selectedSize || (Array.isArray(product.sizes) ? product.sizes[0] : product.sizes) || 'Standard';
       const finalColor = selectedColor || (product.colors && product.colors.length > 0 ? product.colors[0] : 'Default');
+      const finalScent = selectedScent || (product.scent && product.scent.length > 0 ? product.scent[0] : 'Default');
 
-      // Create unique item key based on product id, size, and color
-      const itemKey = `${product.id}-${finalSize}-${finalColor}`;
+      // Create unique item key based on product id, size, color, and scent
+      const itemKey = `${product.id}-${finalSize}-${finalColor}-${finalScent}`;
 
       // Check if item already exists in cart
       const existingItemIndex = state.items.findIndex(item => item.key === itemKey);
@@ -108,6 +109,7 @@ const cartReducer = (state, action) => {
           quantity,
           selectedSize: finalSize,
           selectedColor: finalColor,
+          selectedScent: finalScent,
           addedAt: new Date().toISOString()
         };
 
@@ -281,10 +283,10 @@ export const CartProvider = ({ children }) => {
   };
 
   // Cart actions
-  const addItem = (product, quantity = 1, selectedSize = null, selectedColor = null) => {
+  const addItem = (product, quantity = 1, selectedSize = null, selectedColor = null, selectedScent = null) => {
     dispatch({
       type: CART_ACTIONS.ADD_ITEM,
-      payload: { product, quantity, selectedSize, selectedColor }
+      payload: { product, quantity, selectedSize, selectedColor, selectedScent }
     });
   };
 

@@ -4,6 +4,8 @@
 
 This document describes the comprehensive discount system implemented for the C³ Cube e-commerce platform. The system supports various discount types, with the initial implementation focusing on "Buy X Get Y Free" promotions.
 
+**Important**: Only **one discount applies at a time** - the system automatically selects the best discount based on priority criteria.
+
 ## Features Implemented
 
 ### 1. Core Discount Engine
@@ -50,12 +52,32 @@ This document describes the comprehensive discount system implemented for the C�
 
 ## How It Works
 
-### 1. Discount Calculation Logic
+### 1. Single Discount Selection Logic
+1. **Evaluate All Discounts**: Calculate potential savings for each active discount
+2. **Apply Priority Rules**: Select the best discount based on:
+   - **Priority 1**: Higher savings amount (most important)
+   - **Priority 2**: More free items
+   - **Priority 3**: Higher buy quantity requirement (better for business)
+3. **Apply Only Best Discount**: Only the selected discount is applied to the cart
+
+### 2. Discount Calculation Logic (for each discount)
 1. **Filter Applicable Items**: Find cart items matching discount's `applicableProducts`
 2. **Calculate Eligibility**: Check if total quantity meets `buyQuantity` requirement
 3. **Determine Free Items**: Calculate how many free items user gets (`Math.floor(totalQty / buyQuantity) * freeQuantity`)
-4. **Optimize Distribution**: Give away most expensive items first to maximize customer value
+4. **Optimize Distribution**: Give away **cheapest items** first (business-friendly approach)
 5. **Calculate Savings**: Sum up the value of all free items
+
+### 3. Important Discount Rules
+- **Total Items Required**: For "Buy X Get Y Free", cart must have at least (X + Y) total items
+- **Cheapest Items Free**: The cheapest items are given away for free (not the most expensive)
+- **Complete Sets Only**: Partial sets don't qualify for discounts
+- **Single Product Focus**: All items must be from the `applicableProducts` list
+
+### 4. Discount Eligibility Examples
+- **Buy 2 Get 1 Free**: Requires 3 total items (2 to buy + 1 free)
+- **Buy 3 Get 2 Free**: Requires 5 total items (3 to buy + 2 free)
+- **Cart with 3 items**: Only "Buy 2 Get 1 Free" applies
+- **Cart with 5 items**: Both discounts eligible, system picks the better one
 
 ### 2. Price Integration
 - Works with existing size-based pricing system
@@ -79,12 +101,33 @@ if (result.success) {
 }
 ```
 
+## Example: Buy 3 Get 2 Free
+
+**Scenario**: Customer has 5 candles in cart with prices: £E80, £E90, £E100, £E110, £E120
+
+**Discount**: Buy 3 Get 2 Free for candles
+
+**Result**:
+- **Items to pay for**: £E100, £E110, £E120 (3 most expensive items)
+- **Free items**: £E80, £E90 (2 cheapest items)
+- **Total savings**: £E170
+- **Customer pays**: £E330 instead of £E500
+
 ### Testing Discount System
 ```javascript
-import { testDiscountSystem } from '../utils/testDiscounts.js';
+import { testDiscountSystem, testSingleDiscountBehavior, testSpecificDiscountLogic } from '../utils/testDiscounts.js';
 
+// Test basic discount functionality
 const testResult = testDiscountSystem();
 console.log(testResult);
+
+// Test single discount selection with multiple competing discounts
+const singleDiscountResult = testSingleDiscountBehavior();
+console.log(singleDiscountResult);
+
+// Test specific discount logic (Buy 3 Get 2 Free example)
+const specificResult = testSpecificDiscountLogic();
+console.log(specificResult);
 ```
 
 ### Using in Components

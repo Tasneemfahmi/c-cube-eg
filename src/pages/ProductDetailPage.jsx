@@ -19,6 +19,7 @@ const ProductDetailPage = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [selectedScent, setSelectedScent] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -70,6 +71,7 @@ const ProductDetailPage = () => {
     const hasColors = product.colors && product.colors.length > 0;
     const hasSizes = (Array.isArray(product.sizes) && product.sizes.length > 0) ||
                     (Array.isArray(product.sizeOptions) && product.sizeOptions.length > 0);
+    const hasScents = product.scent && product.scent.length > 0;
 
     // Check if color is required but not selected
     if (hasColors && !selectedColor) {
@@ -91,12 +93,23 @@ const ProductDetailPage = () => {
       return;
     }
 
+    // Check if scent is required but not selected
+    if (hasScents && !selectedScent) {
+      toast({
+        title: "⚠️ Scent Required",
+        description: "Please select a scent before adding to cart.",
+        duration: 3000,
+      });
+      return;
+    }
+
     const options = [];
     if (selectedColor) options.push(selectedColor);
     if (selectedSize) options.push(selectedSize);
+    if (selectedScent) options.push(selectedScent);
 
     // Add item to cart with selected options
-    addItem(product, quantity, selectedSize, selectedColor);
+    addItem(product, quantity, selectedSize, selectedColor, selectedScent);
 
     toast({
       title: "💖 Added to Cart!",
@@ -195,6 +208,11 @@ const ProductDetailPage = () => {
       // Initialize color
       if (product.colors && product.colors.length > 0) {
         setSelectedColor(product.colors[0]);
+      }
+
+      // Initialize scent (for candles)
+      if (product.scent && product.scent.length > 0) {
+        setSelectedScent(product.scent[0]);
       }
 
       // Initialize size - handle your structure (sizes as array) and legacy formats
@@ -396,6 +414,33 @@ const ProductDetailPage = () => {
                     `}
                   >
                     {color}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Scent Selection (for candles) */}
+          {product.scent && product.scent.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-md font-semibold text-pastel-accent">
+                Scent: <span className="font-normal text-pastel-accent/90">{selectedScent}</span>
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {product.scent.map((scent) => (
+                  <Button
+                    key={scent}
+                    variant={selectedScent === scent ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedScent(scent)}
+                    className={`
+                      ${selectedScent === scent
+                        ? 'bg-pastel-dark text-white border-pastel-dark ring-2 ring-pastel-dark/30'
+                        : 'border-pastel-medium text-pastel-accent hover:bg-pastel-light hover:border-pastel-dark'
+                      }
+                    `}
+                  >
+                    {scent}
                   </Button>
                 ))}
               </div>

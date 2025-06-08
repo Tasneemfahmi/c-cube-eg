@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useCart } from './CartContext';
 import { useDiscounts } from './DiscountContext';
-import { calculateCartDiscounts, getCartDiscountEligibility } from '../utils/discountUtils';
+import { calculateCartDiscounts, getAllDiscountEligibility } from '../utils/discountUtils';
 
 const CartWithDiscountsContext = createContext();
 
@@ -39,8 +39,8 @@ export const CartWithDiscountsProvider = ({ children }) => {
     const calculatedDiscounts = calculateCartDiscounts(cart.items, discounts, cart.getItemPrice);
     setDiscountData(calculatedDiscounts);
 
-    // Calculate discount eligibility
-    const eligibility = getCartDiscountEligibility(cart.items, discounts);
+    // Calculate discount eligibility with potential savings information
+    const eligibility = getAllDiscountEligibility(cart.items, discounts, cart.getItemPrice);
     setDiscountEligibility(eligibility);
   }, [cart.items, discounts, cart.getItemPrice]);
 
