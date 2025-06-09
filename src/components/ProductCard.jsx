@@ -6,8 +6,26 @@ import React from 'react';
     import { useToast } from "@/components/ui/use-toast";
     import { useCart } from '../contexts/CartContext';
     import { DiscountBadge } from './DiscountBanner';
+import { useWishlist } from '../contexts/WishlistContext';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
+
 
     const ProductCard = ({ product }) => {
+
+      const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+
+  const isInWishlist = wishlist.some(item => item.id === product.id);
+
+  const handleWishlistToggle = () => {
+    if (isInWishlist) {
+      removeFromWishlist(product);
+    } else {
+      addToWishlist(product);
+    }
+  };
+
+
+
       const { toast } = useToast();
       const { addItem } = useCart();
 
@@ -114,68 +132,68 @@ import React from 'react';
           animate="rest"
           className="bg-white rounded-xl overflow-hidden shadow-lg group cursor-pointer flex flex-col h-full"
         >
-          <Link to={`/shop/${product.id}`} className="flex flex-col h-full">
-            <div className="relative overflow-hidden aspect-[4/3]">
-              {/* Discount Badge */}
-              <DiscountBadge productId={product.id} />
-              <motion.div variants={imageVariants} className="w-full h-full">
-                <img
-                  className="w-full h-full object-cover"
-                  alt={product.name}
-                  src={
-                    product.images && product.images.length > 0
-                      ? product.images[0]
-                      : product.imageUrl || "https://images.unsplash.com/photo-1671376354106-d8d21e55dddd"
-                  }
-                  onError={(e) => {
-                    e.target.src = "https://images.unsplash.com/photo-1671376354106-d8d21e55dddd";
-                  }}
-                />
-              </motion.div>
-              {/* Show color indicator if colors are available */}
-              {product.colors && product.colors.length > 0 && (
-                <div className="absolute bottom-2 left-2">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
-                    <span className="text-xs text-pastel-accent font-medium">
-                      {product.colors.length} color{product.colors.length > 1 ? 's' : ''}
-                    </span>
-                  </div>
-                </div>
-              )}
-              <div className="absolute top-2 right-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="bg-white/70 hover:bg-pastel-medium text-pastel-accent rounded-full backdrop-blur-sm"
-                  onClick={(e) => {
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
-                    toast({ title: "❤️ Added to Wishlist!", description: `${product.name} has been added to your wishlist.`, duration: 2000 });
-                  }}
-                  aria-label="Add to wishlist"
-                >
-                  <Heart size={20} />
-                </Button>
-              </div>
-            </div>
+          <div className="relative flex flex-col h-full">
+  {/* Heart Button outside the Link */}
+  <div className="absolute left-2 top-2 z-10">
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      className="bg-white/70 hover:bg-pastel-medium text-pastel-accent rounded-full backdrop-blur-sm"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleWishlistToggle();
+        toast({ 
+          title: isInWishlist ? "💔 Removed from Wishlist" : "❤️ Added to Wishlist!", 
+          description: `${product.name} has been ${isInWishlist ? "removed from" : "added to"} your wishlist.`,
+          duration: 2000
+        });
+      }}
+      aria-label="Toggle wishlist"
+    >
+      {isInWishlist ? <FaHeart color="pastel-dark" size={20} /> : <FaRegHeart size={20} />}
+    </Button>
+  </div>
 
-            <div className="p-5 flex flex-col flex-grow">
-              <span className="text-xs text-pastel-dark font-medium uppercase tracking-wider mb-1">{product.category}</span>
-              <h3 className="text-lg font-semibold text-pastel-accent mb-2 group-hover:text-pastel-dark transition-colors duration-300 truncate">{product.name}</h3>
-              <p className="text-sm text-pastel-accent/70 mb-3 flex-grow line-clamp-2">{product.description}</p>
-              
-              <div className="mt-auto">
-                <p className="text-xl font-bold text-pastel-accent mb-4">£E{getDisplayPrice(product)}</p>
-                <Button
-                  onClick={handleAddToCart} 
-                  className="w-full bg-pastel-dark text-white hover:bg-pastel-accent transition-colors duration-300 group-hover:scale-105 transform"
-                  aria-label={`Add ${product.name} to cart`}
-                >
-                  Add to Cart <ShoppingCart size={18} className="ml-2" />
-                </Button>
-              </div>
-            </div>
-          </Link>
+  {/* The rest of the card is clickable */}
+  <Link to={`/shop/${product.id}`} className="flex flex-col h-full">
+    <div className="relative overflow-hidden aspect-[4/3]">
+      <DiscountBadge productId={product.id} />
+      <motion.div variants={imageVariants} className="w-full h-full">
+        <img
+          className="w-full h-full object-cover"
+          alt={product.name}
+          src={
+            product.images && product.images.length > 0
+              ? product.images[0]
+              : product.imageUrl || "https://images.unsplash.com/photo-1671376354106-d8d21e55dddd"
+          }
+          onError={(e) => {
+            e.target.src = "https://images.unsplash.com/photo-1671376354106-d8d21e55dddd";
+          }}
+        />
+      </motion.div>
+    </div>
+
+    <div className="p-5 flex flex-col flex-grow">
+      <span className="text-xs text-pastel-dark font-medium uppercase tracking-wider mb-1">{product.category}</span>
+      <h3 className="text-lg font-semibold text-pastel-accent mb-2 group-hover:text-pastel-dark transition-colors duration-300 truncate">{product.name}</h3>
+      <p className="text-sm text-pastel-accent/70 mb-3 flex-grow line-clamp-2">{product.description}</p>
+
+      <div className="mt-auto">
+        <p className="text-xl font-bold text-pastel-accent mb-4">£E{getDisplayPrice(product)}</p>
+        <Button
+          onClick={handleAddToCart}
+          className="w-full bg-pastel-dark text-white hover:bg-pastel-accent transition-colors duration-300 group-hover:scale-105 transform"
+          aria-label={`Add ${product.name} to cart`}
+        >
+          Add to Cart <ShoppingCart size={18} className="ml-2" />
+        </Button>
+      </div>
+    </div>
+  </Link>
+</div>
+
         </motion.div>
       );
     };

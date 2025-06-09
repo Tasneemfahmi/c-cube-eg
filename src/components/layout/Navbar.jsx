@@ -3,13 +3,15 @@ import React, { useState } from 'react';
     import { motion } from 'framer-motion';
     import { Menu, X, ShoppingBag, LogIn, UserPlus } from 'lucide-react';
     import { Button } from '@/components/ui/button';
-    import CCubeLogo from '@/assets/CCubeLogo';
     import C_Cube_Logo from '@/assets/C-Cube-Logo.png';
     import { useCart } from '../../contexts/CartContext';
     import { useAuth } from '../../contexts/AuthContext';
     import AuthModal from '../auth/AuthModal';
     import UserMenu from '../auth/UserMenu';
-    import SignUp from '../auth/SignUp';
+    import { Heart } from 'lucide-react';
+    import { useWishlist } from '../../contexts/WishlistContext';
+
+    
 
     const Navbar = () => {
       const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +19,7 @@ import React, { useState } from 'react';
       const [authMode, setAuthMode] = useState('login');
       const { itemCount, isLoading } = useCart();
       const { currentUser } = useAuth();
+      const { wishlist } = useWishlist();
 
       const navLinks = [
         { name: 'Home', path: '/' },
@@ -95,6 +98,17 @@ import React, { useState } from 'react';
                     )}
                   </Link>
                 </Button>
+                {/* Wishlist Button */}
+<Button asChild variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 relative">
+  <Link to="/wishlist">
+    <Heart size={24} />
+    {wishlist.length > 0 && (
+      <span className="absolute -top-1 -right-1 bg-pastel-accent text-pastel-bg text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+        {wishlist.length > 99 ? '99+' : wishlist.length}
+      </span>
+    )}
+  </Link>
+</Button>
 
                 {/* Authentication Section */}
                 {currentUser ? (
@@ -136,6 +150,18 @@ import React, { useState } from 'react';
                     )}
                   </Link>
                 </Button>
+                {/* Wishlist Button (Mobile) */}
+<Button asChild variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 relative">
+  <Link to="/wishlist">
+    <Heart size={24} />
+    {wishlist.length > 0 && (
+      <span className="absolute -top-1 -right-1 bg-pastel-accent text-pastel-bg text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+      {wishlist.length > 99 ? '99+' : wishlist.length}
+      </span>
+    )}
+  </Link>
+</Button>
+
 
                 {/* User Menu for Mobile (if authenticated) */}
                 {currentUser && <UserMenu />}

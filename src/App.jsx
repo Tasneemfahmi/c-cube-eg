@@ -17,6 +17,7 @@ import { CartWithDiscountsProvider } from './contexts/CartWithDiscountsProvider'
 import { AuthProvider } from './contexts/AuthContext';
 // Import Firebase from the centralized file
 import './firebase';
+import { WishlistProvider } from './contexts/WishlistContext';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <CartProvider>
         <DiscountProvider>
           <CartWithDiscountsProvider>
+            <WishlistProvider>
             <Router>
               <ScrollToTop />
               <div className="flex flex-col min-h-screen bg-pastel-bg">
@@ -43,6 +45,7 @@ function App() {
                 <Toaster />
               </div>
             </Router>
+</WishlistProvider>
           </CartWithDiscountsProvider>
         </DiscountProvider>
       </CartProvider>
