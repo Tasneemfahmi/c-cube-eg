@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
     import { Link, NavLink } from 'react-router-dom';
     import { motion } from 'framer-motion';
-    import { Menu, X, ShoppingBag } from 'lucide-react';
+    import { Menu, X, ShoppingBag, LogIn, UserPlus } from 'lucide-react';
     import { Button } from '@/components/ui/button';
     import CCubeLogo from '@/assets/CCubeLogo';
     import C_Cube_Logo from '@/assets/C-Cube-Logo.png';
     import { useCart } from '../../contexts/CartContext';
+    import { useAuth } from '../../contexts/AuthContext';
+    import AuthModal from '../auth/AuthModal';
+    import UserMenu from '../auth/UserMenu';
+    import SignUp from '../auth/SignUp';
 
     const Navbar = () => {
       const [isOpen, setIsOpen] = useState(false);
+      const [authModalOpen, setAuthModalOpen] = useState(false);
+      const [authMode, setAuthMode] = useState('login');
       const { itemCount, isLoading } = useCart();
+      const { currentUser } = useAuth();
 
       const navLinks = [
         { name: 'Home', path: '/' },
@@ -30,6 +37,15 @@ import React, { useState } from 'react';
       const mobileLinkVariants = {
         open: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
         closed: { opacity: 0, y: 20, transition: { duration: 0.2 } }
+      };
+
+      const handleOpenAuthModal = (mode) => {
+        setAuthMode(mode);
+        setAuthModalOpen(true);
+      };
+
+      const handleCloseAuthModal = () => {
+        setAuthModalOpen(false);
       };
 
       return (
@@ -63,7 +79,8 @@ import React, { useState } from 'react';
                 ))}
               </div>
 
-              <div className="hidden md:flex items-center">
+              <div className="hidden md:flex items-center space-x-3">
+                {/* Cart Button */}
                 <Button asChild variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 relative">
                   <Link to="/cart">
                     <ShoppingBag size={24} />
@@ -78,10 +95,34 @@ import React, { useState } from 'react';
                     )}
                   </Link>
                 </Button>
+
+                {/* Authentication Section */}
+                {currentUser ? (
+                  <UserMenu />
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleOpenAuthModal('login')}
+                      className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 px-3 py-2"
+                    >
+                      <LogIn size={18} className="mr-2" />
+                      Sign In
+                    </Button>
+                    <Button
+                      onClick={() => handleOpenAuthModal('signup')}
+                      className="bg-pastel-accent hover:bg-pastel-dark text-white px-4 py-2"
+                    >
+                      <UserPlus size={18} className="mr-2" />
+                      Sign Up
+                    </Button>
+                  </div>
+                )}
               </div>
 
-              <div className="md:hidden flex items-center">
-                 <Button asChild variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 mr-2 relative">
+              <div className="md:hidden flex items-center space-x-2">
+                {/* Cart Button */}
+                <Button asChild variant="ghost" size="icon" className="text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/50 relative">
                   <Link to="/cart">
                     <ShoppingBag size={24} />
                     {isLoading ? (
@@ -95,6 +136,11 @@ import React, { useState } from 'react';
                     )}
                   </Link>
                 </Button>
+
+                {/* User Menu for Mobile (if authenticated) */}
+                {currentUser && <UserMenu />}
+
+                {/* Menu Toggle Button */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -134,8 +180,44 @@ import React, { useState } from 'react';
                   </NavLink>
                 </motion.div>
               ))}
+
+              {/* Authentication buttons for mobile (only show if not authenticated) */}
+              {!currentUser && (
+                <motion.div variants={mobileLinkVariants} className="pt-4 border-t border-pastel-medium/20">
+                  <div className="space-y-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setIsOpen(false);
+                        handleOpenAuthModal('login');
+                      }}
+                      className="w-full justify-start text-pastel-accent hover:text-pastel-dark hover:bg-pastel-medium/30 px-3 py-2"
+                    >
+                      <LogIn size={18} className="mr-3" />
+                      Sign In
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setIsOpen(false);
+                        handleOpenAuthModal('signup');
+                      }}
+                      className="w-full bg-pastel-accent hover:bg-pastel-dark text-white px-3 py-2"
+                    >
+                      <UserPlus size={18} className="mr-3" />
+                      Sign Up
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
             </div>
           </motion.div>
+
+          {/* Authentication Modal */}
+          <AuthModal
+            isOpen={authModalOpen}
+            onClose={handleCloseAuthModal}
+            initialMode={authMode}
+          />
         </motion.nav>
       );
     };

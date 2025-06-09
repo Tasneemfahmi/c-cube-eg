@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -19,5 +20,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const analytics = getAnalytics(app);
+const auth = getAuth(app);
 
-export { app, db, analytics };
+// Initialize auth providers
+const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
+
+// Configure Google provider
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
+
+// Configure Facebook provider
+facebookProvider.addScope('email');
+
+export { app, db, analytics, auth, googleProvider, facebookProvider };
