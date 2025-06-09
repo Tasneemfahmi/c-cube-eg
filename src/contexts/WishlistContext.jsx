@@ -1,6 +1,5 @@
-// contexts/WishlistContext.js
 import { createContext, useContext, useEffect, useState } from 'react';
-import { db } from '../firebase'; // adjust path accordingly
+import { db } from '../firebase';
 import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 
@@ -10,15 +9,18 @@ export const WishlistProvider = ({ children }) => {
   const { currentUser } = useAuth();
   const [wishlist, setWishlist] = useState([]);
 
+  // Fetch wishlist from Firestore
   const fetchWishlist = async () => {
     if (!currentUser) return;
 
     const wishlistRef = doc(db, 'wishlists', currentUser.uid);
     const docSnap = await getDoc(wishlistRef);
+
     if (docSnap.exists()) {
       setWishlist(docSnap.data().items || []);
     } else {
-      await setDoc(wishlistRef, { items: [] });
+      await setDoc(wishlistRef, { uid: currentUser.uid, items: [] });
+      setWishlist([]);
     }
   };
 
@@ -30,24 +32,39 @@ export const WishlistProvider = ({ children }) => {
     }
   }, [currentUser]);
 
-  const addToWishlist = async (item) => {
+  // ✅ Add to wishlist and update state
+  const addToWishlist = async (product) => {
     if (!currentUser) return;
 
+    const productId = product.id;
     const wishlistRef = doc(db, 'wishlists', currentUser.uid);
-    await updateDoc(wishlistRef, {
-      items: arrayUnion(item),
-    });
-    setWishlist((prev) => [...prev, item]);
+    const wishlistSnap = await getDoc(wishlistRef);
+
+    if (wishlistSnap.exists()) {
+      await updateDoc(wishlistRef, {
+        items: arrayUnion(productId),
+        uid: currentUser.uid,
+      });
+    } else {
+      await setDoc(wishlistRef, {
+        uid: currentUser.uid,
+        items: [productId],
+      });
+    }
+
+    setWishlist((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
   };
 
-  const removeFromWishlist = async (item) => {
+  // ✅ Remove from wishlist and update state
+  const removeFromWishlist = async (productId) => {
     if (!currentUser) return;
 
     const wishlistRef = doc(db, 'wishlists', currentUser.uid);
     await updateDoc(wishlistRef, {
-      items: arrayRemove(item),
+      items: arrayRemove(productId),
     });
-    setWishlist((prev) => prev.filter((i) => i.id !== item.id));
+
+    setWishlist((prev) => prev.filter((id) => id !== productId));
   };
 
   return (

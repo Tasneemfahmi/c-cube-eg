@@ -1,4 +1,45 @@
+import { auth } from '../firebase';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
+
+export const firebaseSignUp = (email, password) =>
+  createUserWithEmailAndPassword(auth, email, password);
+
+export const firebaseLogin = (email, password) =>
+  signInWithEmailAndPassword(auth, email, password);
+
+export const firebaseLogout = () => signOut(auth);
+
+export const firebaseResetPassword = (email) =>
+  sendPasswordResetEmail(auth, email);
 // Auth utility functions
+
+
+
+
+export const isAdmin = (user) => {
+  // Assuming you store roles in user custom claims or Firestore
+  return user?.role === 'admin'; // or however you handle roles
+};
+
+
+// Validate password confirmation
+export const validatePasswordConfirmation = (password, confirmPassword) => {
+  if (password !== confirmPassword) {
+    return {
+      isValid: false,
+      error: 'Passwords do not match'
+    };
+  }
+  return {
+    isValid: true,
+    error: null
+  };
+};
 
 // Validate email format
 export const validateEmail = (email) => {
@@ -93,6 +134,22 @@ export const formatAuthError = (error) => {
       return error.message || 'An unexpected error occurred. Please try again.';
   }
 };
+
+// Get user email or fallback
+export const getUserEmail = (user) => {
+  return user?.email || 'No email available';
+};
+
+
+// Capitalize user's display name
+export const capitalizeName = (name) => {
+  if (!name) return '';
+  return name
+    .split(' ')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+};
+
 
 // Check if user is authenticated
 export const isAuthenticated = (user) => {

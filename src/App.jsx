@@ -15,9 +15,9 @@ import { CartProvider } from './contexts/CartContext';
 import { DiscountProvider } from './contexts/DiscountContext';
 import { CartWithDiscountsProvider } from './contexts/CartWithDiscountsProvider';
 import { AuthProvider } from './contexts/AuthContext';
-// Import Firebase from the centralized file
-import './firebase';
+import './firebase.js';
 import { WishlistProvider } from './contexts/WishlistContext';
+import Wishlist from './pages/Wishlist.jsx';
 
 function App() {
   return (
@@ -39,6 +39,7 @@ function App() {
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/custom-orders" element={<ContactPage />} />
                     <Route path="/auth-test" element={<AuthTestPage />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
                   </Routes>
                 </main>
                 <Footer />
