@@ -19,6 +19,7 @@ import './firebase.js';
 import { WishlistProvider } from './contexts/WishlistContext';
 import Wishlist from './pages/Wishlist.jsx';
 import ComingSoonPage from './pages/ComingSoonPage.jsx';
+import ComingSoonFooter from './components/layout/ComingSoonFooter';
 
 function App() {
   return (
@@ -35,7 +36,7 @@ function App() {
                     <Route path="/" element={<ComingSoonPage />} />
                   </Routes>
                 </main>
-                <Footer />
+                <ComingSoonFooter />
                 <Toaster />
               </div>
             </Router>

@@ -58,59 +58,15 @@ const ComingSoonPage = () => {
             Handmade with heart – across six sides.
           </motion.p>
           <motion.p variants={itemVariants} className="text-xl md:text-2xl text-pastel-accent/80 mb-10">
-            Coming Soon
+            Coming Soon...
           </motion.p>
+          <motion.div variants={itemVariants} className="flex flex-col items-center">
+                          <span className="font-semibold mb-4 text-6xl"><a href="https://forms.gle/Po74rmqzK7SCoLaVA" className="hover:text-pastel-bg transition-colors">Join Us Now 🩷</a></span>
+                          
+                        </motion.div>
         </div>
       </motion.section>
 
-      {/* Featured Products Section */}
-      <section className="py-16 md:py-24 bg-pastel-bg">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold text-pastel-accent text-center mb-4">
-            Featured Treasures
-          </motion.h2>
-
-          <motion.div
-            variants={containerVariants}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-          >
-            {products.map((product, index) => (
-              <motion.div 
-                key={product.id} 
-                variants={itemVariants} 
-                custom={index} 
-                className="animate-slide-in-up" 
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="bg-white p-4 rounded-lg shadow-md">
-                  <img 
-                    src={`/images/${product.imageSrc}.jpg`} 
-                    alt={product.name}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                  />
-                  <div className="p-4">
-                    <h3 className="font-bold text-pastel-accent">{product.name}</h3>
-                    <p className="text-pastel-dark">${product.price}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="text-center mt-12">
-            <Button 
-              asChild 
-              variant="outline" 
-              size="lg" 
-              className="border-pastel-dark text-pastel-accent hover:bg-pastel-dark hover:text-pastel-bg shadow-md"
-            >
-              <Link to="/shop">
-                Explore All Products <Heart size={18} className="ml-2 fill-current text-pastel-dark group-hover:text-pastel-bg" />
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Categories Section */}
       <section className="py-16 md:py-24 bg-pastel-light">
