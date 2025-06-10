@@ -18,6 +18,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import './firebase.js';
 import { WishlistProvider } from './contexts/WishlistContext';
 import Wishlist from './pages/Wishlist.jsx';
+import ComingSoonPage from './pages/ComingSoonPage.jsx';
 
 function App() {
   return (
@@ -29,17 +30,9 @@ function App() {
             <Router>
               <ScrollToTop />
               <div className="flex flex-col min-h-screen bg-pastel-bg">
-                <Navbar />
                 <main className="flex-grow">
                   <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/shop" element={<ShopPage />} />
-                    <Route path="/shop/:productId" element={<ProductDetailPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/custom-orders" element={<ContactPage />} />
-                    <Route path="/auth-test" element={<AuthTestPage />} />
-                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/" element={<ComingSoonPage />} />
                   </Routes>
                 </main>
                 <Footer />
