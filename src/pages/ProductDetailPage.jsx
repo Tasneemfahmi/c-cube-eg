@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Heart, ShoppingCart, ChevronLeft, ChevronRight, CheckCircle, Star } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
-import { db } from '../firebase.js';
+import { db } from '../firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { fetchAllProducts } from '../utils/fetchProducts.js';
 import { useCart } from '../contexts/CartContext';
 import DiscountBanner from '../components/DiscountBanner';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { Button } from '../components/ui/button.jsx';
+
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
@@ -17,13 +19,21 @@ const ProductDetailPage = () => {
   const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+    const [selectedColor, setSelectedColor] = useState('');
   const [selectedScent, setSelectedScent] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentPrice, setCurrentPrice] = useState(0);
+
+  useEffect(() => {
+    if (product) {
+      setCurrentImage(product?.colorOptions?.[0]?.image || product?.image);
+    }
+  }, [product]);
+
+  const [currentImage, setCurrentImage] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -65,13 +75,17 @@ const ProductDetailPage = () => {
   const handleQuantityChange = (amount) => {
     setQuantity(prev => Math.max(1, Math.min(prev + amount, product?.inStock ? 10 : 1)));
   };
-  
+    const handleColorSelect = (color) => {
+        setSelectedColor(color);
+        setCurrentImage(product.colorOptions.find((option) => option.color === color).image)
+    };
+
   const handleAddToCart = () => {
     // Validate that all required options are selected
-    const hasColors = product.colors && product.colors.length > 0;
+    const hasColors = product.colorOptions && product.colorOptions.length > 0;
     const hasSizes = (Array.isArray(product.sizes) && product.sizes.length > 0) ||
                     (Array.isArray(product.sizeOptions) && product.sizeOptions.length > 0);
-    const hasScents = product.scent && product.scent.length > 0;
+    const hasScents = product.scentOptions && product.scentOptions.length > 0;
 
     // Check if color is required but not selected
     if (hasColors && !selectedColor) {
@@ -127,14 +141,24 @@ const ProductDetailPage = () => {
     });
   }
 
-  const nextImage = () => {
-    const imageCount = product?.images?.length || 1;
-    setCurrentImageIndex(prev => (prev + 1) % imageCount);
+ const nextImage = () => {
+    if (product.colorOptions) {
+      setCurrentImage(product.colorOptions[(currentImageIndex + 1) % product.colorOptions.length].image);
+      setCurrentImageIndex((prev) => (prev + 1) % product.colorOptions.length);
+    } else if (product.scentOptions) {
+      setCurrentImage(product.scentOptions[(currentImageIndex + 1) % product.scentOptions.length].image);
+      setCurrentImageIndex((prev) => (prev + 1) % product.scentOptions.length);
+    }
   };
 
   const prevImage = () => {
-    const imageCount = product?.images?.length || 1;
-    setCurrentImageIndex(prev => (prev - 1 + imageCount) % imageCount);
+    if (product.colorOptions) {
+      setCurrentImage(product.colorOptions[(currentImageIndex - 1 + product.colorOptions.length) % product.colorOptions.length].image);
+      setCurrentImageIndex((prev) => (prev - 1 + product.colorOptions.length) % product.colorOptions.length);
+    } else if (product.scentOptions) {
+      setCurrentImage(product.scentOptions[(currentImageIndex - 1 + product.scentOptions.length) % product.scentOptions.length].image);
+      setCurrentImageIndex((prev) => (prev - 1 + product.scentOptions.length) % product.scentOptions.length);
+    }
   };
 
   // Calculate price based on size and your price structure
@@ -204,15 +228,15 @@ const ProductDetailPage = () => {
 
   // Initialize selected options when product loads
   useEffect(() => {
-    if (product) {
-      // Initialize color
-      if (product.colors && product.colors.length > 0) {
-        setSelectedColor(product.colors[0]);
-      }
+     if (product) {
+       const hasColorOptions = product.colorOptions && product.colorOptions.length > 0;
+      const hasScentOptions = product.scentOptions && product.scentOptions.length > 0;
 
-      // Initialize scent (for candles)
-      if (product.scent && product.scent.length > 0) {
-        setSelectedScent(product.scent[0]);
+      // Initialize scent
+      if (hasColorOptions) {
+        setSelectedColor(product.colorOptions[0].color);
+      } else if (hasScentOptions) {
+        setSelectedScent(product.scentOptions[0].scent);
       }
 
       // Initialize size - handle your structure (sizes as array) and legacy formats
@@ -296,7 +320,7 @@ const ProductDetailPage = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="relative"
         >
-          <AnimatePresence mode="wait">
+           <AnimatePresence mode="wait">
             <motion.div 
               key={currentImageIndex}
               variants={imageTransition}
@@ -308,18 +332,14 @@ const ProductDetailPage = () => {
               <img
                 className="w-full h-full object-cover"
                 alt={`${product.name} - view ${currentImageIndex + 1}`}
-                src={
-                  product.images && product.images.length > 0
-                    ? product.images[currentImageIndex]
-                    : "https://images.unsplash.com/photo-1580928087639-6bfb993701a0?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600&h=600&fit=crop&ixid=M3w2Mzg4NTR8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MTcxNzE0Njd8"
-                }
+                src={currentImage || "https://images.unsplash.com/photo-1580928087639-6bfb993701a0?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600&h=600&fit=crop&ixid=M3w2Mzg4NTR8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MTcxNzE0Njd8"}
                 onError={(e) => {
                   e.target.src = "https://images.unsplash.com/photo-1580928087639-6bfb993701a0?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600&h=600&fit=crop&ixid=M3w2Mzg4NTR8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MTcxNzE0Njd8";
                 }}
               />
             </motion.div>
           </AnimatePresence>
-          {product.images && product.images.length > 1 && (
+          {product.scentOptions && product.scentOptions.length > 1 && (
             <>
               <Button variant="ghost" size="icon" onClick={prevImage} className="absolute top-1/2 left-2 -translate-y-1/2 bg-white/70 hover:bg-pastel-medium text-pastel-accent rounded-full backdrop-blur-sm z-10">
                 <ChevronLeft size={28} />
@@ -328,13 +348,13 @@ const ProductDetailPage = () => {
                 <ChevronRight size={28} />
               </Button>
               <div className="mt-4 flex space-x-2 justify-center">
-                {product.images && product.images.map((imageUrl, index) => (
+                {product.scentOptions && product.scentOptions.map((scentOption, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
                     className={`w-16 h-16 rounded-md overflow-hidden border-2 ${index === currentImageIndex ? 'border-pastel-dark ring-2 ring-pastel-dark' : 'border-transparent hover:border-pastel-medium'} transition-all`}
                   >
-                    <img className="w-full h-full object-cover" alt={`Thumbnail ${index + 1}`} src={imageUrl} />
+                    <img className="w-full h-full object-cover" alt={`Thumbnail ${index + 1}`} src={scentOption.image} />
                   </button>
                 ))}
               </div>
@@ -366,25 +386,25 @@ const ProductDetailPage = () => {
             </div>
           )}
           <div className="space-y-1">
-            <p className="text-2xl font-semibold text-pastel-dark">
-              £E{currentPrice.toFixed(2)}
-              {selectedSize && (typeof product.price === 'object' || product.pricing) && (
-                <span className="text-sm text-pastel-accent/70 ml-2">
-                  (Size: {selectedSize})
-                </span>
-              )}
-            </p>
-            {(() => {
-              const priceRange = getPriceRange(product);
-              if (priceRange && !selectedSize) {
-                return (
-                  <p className="text-sm text-pastel-accent/70">
-                    Price range: £E{priceRange.min.toFixed(2)} - £E{priceRange.max.toFixed(2)}
-                  </p>
-                );
-              }
-              return null;
-            })()}
+              <p className="text-2xl font-semibold text-pastel-dark">
+                  £E{currentPrice.toFixed(2)}
+                  {selectedSize && (typeof product.price === 'object' || product.pricing) && (
+                      <span className="text-sm text-pastel-accent/70 ml-2">
+                          (Size: {selectedSize})
+                      </span>
+                  )}
+              </p>
+              {(() => {
+                  const priceRange = getPriceRange(product);
+                  if (priceRange && !selectedSize) {
+                      return (
+                          <p className="text-sm text-pastel-accent/70">
+                              Price range: £E{priceRange.min.toFixed(2)} - £E{priceRange.max.toFixed(2)}
+                          </p>
+                      );
+                  }
+                  return null;
+              })()}
           </div>
           <p className="text-pastel-accent/80 leading-relaxed">
             {product.description || 'No description available.'}
@@ -394,26 +414,26 @@ const ProductDetailPage = () => {
           <DiscountBanner productId={product.id} />
 
           {/* Color Selection */}
-          {product.colors && product.colors.length > 0 && (
+          {product.colorOptions && product.colorOptions.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-md font-semibold text-pastel-accent">
                 Color: <span className="font-normal text-pastel-accent/90">{selectedColor}</span>
               </h3>
               <div className="flex flex-wrap gap-2">
-                {product.colors.map((color) => (
+                {product.colorOptions.map((colorOption) => (
                   <Button
-                    key={color}
-                    variant={selectedColor === color ? "default" : "outline"}
+                    key={colorOption.color}
+                    variant={selectedColor === colorOption.color ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedColor(color)}
+                    onClick={() => handleColorSelect(colorOption.color)}
                     className={`
-                      ${selectedColor === color
+                      ${selectedColor === colorOption.color
                         ? 'bg-pastel-dark text-white border-pastel-dark ring-2 ring-pastel-dark/30'
                         : 'border-pastel-medium text-pastel-accent hover:bg-pastel-light hover:border-pastel-dark'
                       }
                     `}
                   >
-                    {color}
+                    {colorOption.color}
                   </Button>
                 ))}
               </div>
@@ -421,26 +441,26 @@ const ProductDetailPage = () => {
           )}
 
           {/* Scent Selection (for candles) */}
-          {product.scent && product.scent.length > 0 && (
+          {product.scentOptions && product.scentOptions.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-md font-semibold text-pastel-accent">
                 Scent: <span className="font-normal text-pastel-accent/90">{selectedScent}</span>
               </h3>
               <div className="flex flex-wrap gap-2">
-                {product.scent.map((scent) => (
+                {product.scentOptions.map((scentOption) => (
                   <Button
-                    key={scent}
-                    variant={selectedScent === scent ? "default" : "outline"}
+                    key={scentOption.scent}
+                    variant={selectedScent === scentOption.scent ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedScent(scent)}
+                    onClick={() => setSelectedScent(scentOption.scent)}
                     className={`
-                      ${selectedScent === scent
+                      ${selectedScent === scentOption.scent
                         ? 'bg-pastel-dark text-white border-pastel-dark ring-2 ring-pastel-dark/30'
                         : 'border-pastel-medium text-pastel-accent hover:bg-pastel-light hover:border-pastel-dark'
                       }
                     `}
                   >
-                    {scent}
+                    {scentOption.scent}
                   </Button>
                 ))}
               </div>

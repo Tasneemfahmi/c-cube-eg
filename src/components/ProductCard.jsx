@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,29 @@ import { useCart } from '../contexts/CartContext';
 import { DiscountBadge } from './DiscountBanner';
 import { useWishlist } from '../contexts/WishlistContext';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { useRef, useEffect } from 'react';
+import { useCallback } from 'react';
 
 const ProductCard = ({ product }) => {
+  const hasColorOptions = product.colorOptions && product.colorOptions.length > 0;
+  const hasScentOptions = product.scentOptions && product.scentOptions.length > 0;
+
+  const [selectedOption, setSelectedOption] = useState(
+    hasColorOptions ? product.colorOptions[0] :
+    hasScentOptions ? product.scentOptions[0] :
+    null
+  );
+
+  const [visibleOptions, setVisibleOptions] = useState([]);
+  const [overflowCount, setOverflowCount] = useState(0);
+  const containerRef = useRef(null);
+
   const { toast } = useToast();
   const { addItem } = useCart();
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   const isInWishlist = wishlist.includes(product.id);
+
 
   const handleWishlistToggle = () => {
     if (isInWishlist) {
@@ -37,7 +53,7 @@ const ProductCard = ({ product }) => {
     const hasMultipleOptions = (product.colors?.length > 1) ||
       (Array.isArray(product.sizes) && product.sizes.length > 1) ||
       (Array.isArray(product.sizeOptions) && product.sizeOptions.length > 1) ||
-      (product.scent?.length > 1);
+      (product.colorOptions?.length > 1) || (product.scentOptions?.length > 1);
 
     if (hasMultipleOptions) {
       toast({
@@ -99,10 +115,108 @@ const ProductCard = ({ product }) => {
     hover: { scale: 1.1, transition: { duration: 0.3, ease: "easeOut" } },
   };
 
-  if (!product) {
-    return <div className="p-4 bg-red-100 text-red-600">Error: No product data</div>;
+  if (!product || !selectedOption) {
+    return <div className="p-4 bg-red-100 text-red-600">Error: Invalid product data</div>;
+  }
+useEffect(() => {
+  const calculateVisibleOptions = () => {
+    if (!containerRef.current || (!hasColorOptions && !hasScentOptions)) return;
+
+    const containerWidth = containerRef.current.offsetWidth;
+    const allOptions = hasColorOptions ? product.colorOptions : product.scentOptions;
+    let totalWidth = 0;
+    let visible = [];
+    let overflow = 0;
+
+    for (let i = 0; i < allOptions.length; i++) {
+      const optionWidth = 32; // Width of the circle button (w-8 is 32px) + some margin
+      totalWidth += optionWidth;
+
+      if (totalWidth <= containerWidth) {
+        visible.push(allOptions[i]);
+      } else {
+        overflow++;
+      }
+    }
+
+    setVisibleOptions(visible);
+    setOverflowCount(overflow);
+  };
+
+  calculateVisibleOptions();
+  window.addEventListener('resize', calculateVisibleOptions); // Recalculate on resize
+
+  return () => {
+    window.removeEventListener('resize', calculateVisibleOptions);
+  };
+}, [product, hasColorOptions, hasScentOptions]);
+
+  if (!product || !selectedOption) {
+    return <div className="p-4 bg-red-100 text-red-600">Error: Invalid product data</div>;
   }
 
+
+const tailwindColorMap = {
+  // Standard colors
+  "Black": "bg-gray-800",
+  "White": "bg-white border border-gray-200",
+  "Blue": "bg-blue-400",
+  "Baby Blue": "bg-sky-300",
+  "Pink": "bg-pink-400",
+  "Lavender": "bg-purple-300",
+  "Beige": "bg-orange-100",
+  "Purple": "bg-purple-500",
+  "Red": "bg-red-500",
+  "Green": "bg-green-500",
+  "Yellow": "bg-yellow-400",
+  "Orange": "bg-orange-400",
+  "Brown": "bg-amber-700",
+  "Gray": "bg-gray-400",
+  "Teal": "bg-teal-400",
+  "Indigo": "bg-indigo-500",
+  "Plum": "bg-fuchsia-900",
+  "Burgundy": "bg-pink-900",
+  "Wine Red": "bg-red-900",
+  
+  // Multi-color patterns (requires custom CSS)
+  "Rainbow": "bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500",
+  "Ombre": "bg-gradient-to-b from-pink-500 to-purple-600",
+  
+  // Fallback for unknown colors
+  default: "bg-gray-300"
+};
+const calculateVisibleOptions = useCallback(() => {
+    if (!containerRef.current || (!hasColorOptions && !hasScentOptions)) return;
+
+    const containerWidth = containerRef.current.offsetWidth;
+    const allOptions = hasColorOptions ? product.colorOptions : product.scentOptions;
+    let totalWidth = 0;
+    let visible = [];
+    let overflow = 0;
+    const optionWidth = 40; // Width of the circle button (w-8 is 32px) + some margin
+    for (let i = 0; i < allOptions.length; i++) {
+        //  Width of the circle button (w-8 is 32px) + some margin
+      totalWidth += optionWidth;
+
+      if (totalWidth <= containerWidth) {
+        visible.push(allOptions[i]);
+      } else {
+        overflow++;
+      }
+    }
+
+    setVisibleOptions(visible);
+    setOverflowCount(overflow);
+  }, [product, hasColorOptions, hasScentOptions]);
+useEffect(() => {
+  
+  calculateVisibleOptions();
+  window.addEventListener('resize', calculateVisibleOptions); // Recalculate on resize
+
+  return () => {
+    window.removeEventListener('resize', calculateVisibleOptions);
+  };
+}, [product, hasColorOptions, hasScentOptions, calculateVisibleOptions]);
   return (
     <motion.div
       variants={cardVariants}
@@ -132,16 +246,62 @@ const ProductCard = ({ product }) => {
           <div className="relative overflow-hidden aspect-[4/3]">
             <DiscountBadge productId={product.id} />
             <motion.div variants={imageVariants} className="w-full h-full">
-              <img
-                className="w-full h-full object-cover"
-                alt={product.name}
-                src={product.images?.[0] || product.imageUrl || "https://images.unsplash.com/photo-1671376354106-d8d21e55dddd"}
-                onError={(e) => {
-                  e.target.src = "https://images.unsplash.com/photo-1671376354106-d8d21e55dddd";
-                }}
-              />
+              {hasColorOptions ? (
+                <img
+                  className="w-full h-full object-cover"
+                  alt={product.name}
+                  src={product.colorOptions.find(option => option.color === selectedOption.color).image}
+                />
+              ) : hasScentOptions ? (
+                <img
+                  className="w-full h-full object-cover"
+                  alt={product.name}
+                  src={product.scentOptions.find(option => option.scent === selectedOption.scent).image}
+                />
+              ) : (
+                <img
+                  className="w-full h-full object-cover"
+                  alt={product.name}
+                  src={product.image}
+                />
+              )}
             </motion.div>
           </div>
+
+          {/* Color Options Selector - Corrected Version */}
+      <div 
+        ref={containerRef}
+        className="flex flex-nowrap justify-center gap-2 p-2 overflow-x-auto"
+      >
+        {(hasColorOptions ? product.colorOptions : product.scentOptions)?.map((option, index) => {
+          const isSelected = selectedOption === option;
+          
+          let colorClass = "";
+          if (hasColorOptions) {
+            colorClass = tailwindColorMap[option.circleColor] || 
+                        `bg-[${option.circleColor.toLowerCase()}]`;
+          } else if (hasScentOptions) {
+            colorClass = tailwindColorMap[option.circleColor] || 
+                        `bg-[${option.circleColor.toLowerCase()}]`;
+          }
+
+          return (
+            <button
+              key={index}
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedOption(option);
+              }}
+              className={`flex-shrink-0 w-6 h-6 rounded-full border-2 transition-all duration-200 ${colorClass} ${
+                isSelected ? 'border-black scale-110 ring-2 ring-offset-2 ring-black/20' : 'border-gray-300'
+              }`}
+              title={hasColorOptions ? option.color : option.scent}
+              aria-label={`Select ${hasColorOptions ? 'color' : 'scent'}: ${hasColorOptions ? option.color : option.scent}`}
+            />
+          );
+        })}
+      </div>
+
 
           <div className="p-5 flex flex-col flex-grow">
             <span className="text-xs text-pastel-dark font-medium uppercase tracking-wider mb-1">{product.category}</span>
